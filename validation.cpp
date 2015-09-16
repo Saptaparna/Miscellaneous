@@ -255,6 +255,10 @@ int main(int argc, char** argv){//main
 				     5000,0,100000,
 				     5000,0,100000);
 
+  TH2F *p_ECALvsHCAL = new TH2F("p_ECALvsHCAL",";ECAL energy (MIP);HCAL energy (MIP)",
+  				     10000,0,100000,
+  				     10000,0,100000);
+
   TH1F *p_nGenPart = new TH1F("p_nGenPart",";n(genParticles)",200,0,200);
   TH1F *p_genPartId = new TH1F("p_genPartId",";pdgid",12000,-6000,6000);
 
@@ -323,6 +327,8 @@ int main(int argc, char** argv){//main
   TH1F *p_Esim[nSections];
   TH1F *p_Ereco[nSections];
   TH1F *p_ETOT10 = new TH1F("p_ETOT10", "; Etot > 1 MIP 10 #times 10 mm^{2} cell", 30000,0,300000);
+  //TH2F *p_ECAL_HCAL = new TH2F("p_ECAL_HCAL", "ECAL energy versus HCAL energy; ECAL energy (MIP); HCAL energy (MIP)", 30000, 0.0, 300000.0, 30000, 0.0, 300000.0);
+  //p_ECAL_HCAL->Sumw2();
 
   std::ostringstream lName;
   /*for (unsigned iL(0); iL<nLayers; ++iL){
@@ -527,7 +533,7 @@ int main(int argc, char** argv){//main
     unsigned nAbove1_10 = 0;
     unsigned nAbove1_15 = 0;
     //for (unsigned iL=28; iL<52; ++iL){//only HCAL
-    //for (unsigned iL(0); iL<29; ++iL){//only ECAL
+    //for (unsigned iL(0); iL<28; ++iL){//only ECAL
     for (unsigned iL(0); iL<nLayers; ++iL){//loop on layers
       double absweight = (*ssvec)[iL].volX0trans()/(*ssvec)[1].volX0trans();
       TH2D *hist = geomConv2d5.get2DHist(iL,"E");
@@ -580,7 +586,36 @@ int main(int argc, char** argv){//main
 	if (E>1.) nAbove1_15++;
       }
 
-    }
+    }//end of the loop on layers
+    double h_Etot10_ecal = 0.0;
+    double Etot10_ecal = 0.0;
+    double h_Etot10_hcal = 0.0;
+    double Etot10_hcal = 0.0;
+
+    for (unsigned iL=0; iL<28; ++iL){//ECAL layers only
+      double absweight = (*ssvec)[iL].volX0trans()/(*ssvec)[1].volX0trans(); 
+      TH2D *hist_ecal = geomConv10.get2DHist(iL,"E");
+      double Emax_ecal = hist_ecal->GetBinContent(hist_ecal->GetMaximumBin());
+      for (int bin(1);bin<(hist_ecal->GetNbinsX()*hist_ecal->GetNbinsY()+1);++bin){
+        double E = hist_ecal->GetBinContent(bin);
+        Etot10_ecal += E*absweight;
+        if (E>1.) h_Etot10_ecal = Etot10_ecal;
+      }//end of the loop on bins
+    }//end of the loop on layers
+    
+    for (unsigned iL=28; iL<52; ++iL){//HCAL layers only
+      double absweight = (*ssvec)[iL].volX0trans()/(*ssvec)[1].volX0trans();
+      TH2D *hist_hcal = geomConv10.get2DHist(iL,"E");
+      double Emax_hcal = hist_hcal->GetBinContent(hist_hcal->GetMaximumBin());
+      for (int bin(1);bin<(hist_hcal->GetNbinsX()*hist_hcal->GetNbinsY()+1);++bin){
+        double E = hist_hcal->GetBinContent(bin);   
+        Etot10_hcal += E*absweight;
+        if (E>1.) h_Etot10_hcal = Etot10_hcal;
+      }//end of the loop on bins
+    }//end of the loop on layers
+
+    //p_G4_BHCALvsFHCAL->Fill(h_Etot10_ecal, h_Etot10_hcal); 
+    p_ECALvsHCAL->Fill(h_Etot10_ecal, h_Etot10_hcal);
 
     p_maxEhit_2d5->Fill(maxE2d5);
     p_maxEhit_5->Fill(maxE5);
@@ -642,20 +677,20 @@ int main(int argc, char** argv){//main
       double absweight = (*ssvec)[layer].voldEdx()/(*ssvec)[1].voldEdx();
 
       Ereco[sec] += energy*absweight;
-      std::cout << "energy = " << energy << std::endl;
-      std::cout << "absweight = " << absweight << std::endl;
-      std::cout << "(*ssvec)[layer].volX0trans() = " << (*ssvec)[layer].volX0trans() << std::endl;
-      std::cout << "(*ssvec)[1].volX0trans() = " << (*ssvec)[1].volX0trans() << std::endl; 
+      //std::cout << "energy = " << energy << std::endl;
+      //std::cout << "absweight = " << absweight << std::endl;
+      //std::cout << "(*ssvec)[layer].volX0trans() = " << (*ssvec)[layer].volX0trans() << std::endl;
+      //std::cout << "(*ssvec)[1].volX0trans() = " << (*ssvec)[1].volX0trans() << std::endl; 
       double energy_sum = 0.0;
       energy_sum += energy;
-      std::cout << "energy_sum = " << energy_sum << std::endl; 
+      //std::cout << "energy_sum = " << energy_sum << std::endl; 
    }//loop on rechits
     
     p_nRecHits->Fill((*rechitvec).size());
 
     double Eecal = 0;
     if (myDetector.section(DetectorEnum::FECAL)<nSections) Eecal += myDigitiser.MIPtoGeV(myDetector.subDetectorByEnum(DetectorEnum::FECAL),Ereco[myDetector.section(DetectorEnum::FECAL)]);
-    if (myDetector.section(DetectorEnum::FECAL)<nSections) std::cout << "Eecal = " << Eecal << std::endl;
+    if (myDetector.section(DetectorEnum::FECAL)<nSections) //std::cout << "Eecal = " << Eecal << std::endl;
     if (myDetector.section(DetectorEnum::MECAL)<nSections) Eecal += myDigitiser.MIPtoGeV(myDetector.subDetectorByEnum(DetectorEnum::MECAL),Ereco[myDetector.section(DetectorEnum::MECAL)]);
     if (myDetector.section(DetectorEnum::BECAL)<nSections) Eecal += myDigitiser.MIPtoGeV(myDetector.subDetectorByEnum(DetectorEnum::BECAL),Ereco[myDetector.section(DetectorEnum::BECAL)]);
     /*double Efhcal = 0;
@@ -769,7 +804,6 @@ int main(int argc, char** argv){//main
 	      << " underflows " << p_ErecoTotal->GetBinContent(0)
 	      << " overflows " << p_ErecoTotal->GetBinContent(p_ErecoTotal->GetNbinsX()+1)
 	      << std::endl;
-
   outputFile->Write();
   //outputFile->Close();
   
