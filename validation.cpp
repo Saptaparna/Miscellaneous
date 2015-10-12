@@ -420,17 +420,6 @@ int main(int argc, char** argv){//main
 
     unsigned firstInteraction = 0;
 
-    // double refThicknessOdd = (*ssvec)[1].volX0trans();
-    // if (refThicknessOdd == 0) {
-    //   std::cerr << " ERROR, ref thickness odd is " << refThicknessOdd << ", setting to 1..." << std::endl;
-    //   refThicknessOdd = 1;
-    // }
-    // double refThicknessEven = (*ssvec)[2].volX0trans();
-    // if (refThicknessEven == 0) {
-    //   std::cerr << " ERROR, ref thickness odd is " << refThicknessEven << ", setting to 1..." << std::endl;
-    //   refThicknessEven = 1;
-    // }
-
     //to get simhit energy in final granularity
     unsigned prevLayer = 10000;
     DetectorEnum type = DetectorEnum::FECAL;
@@ -485,6 +474,13 @@ int main(int argc, char** argv){//main
       geomConv2d5.fill(type,subdetLayer,energy,lRealTime,posx,posy,posz);
       if (layer==11 || layer==18) geomConv5.fill(type,subdetLayer,energy,lRealTime,posx,posy,posz);
       geomConv10.fill(type,subdetLayer,energy,lRealTime,posx,posy,posz);
+      std::cout << "type = " << type << std::endl;
+      std::cout << "subdetLayer = " << subdetLayer << std::endl;
+      std::cout << "energy = " << energy << std::endl;
+      std::cout << "lRealTime = " << lRealTime << std::endl;
+      std::cout << "posx = " << posx << std::endl;
+      std::cout << "posy = " << posy << std::endl;
+      std::cout << "posz = " << posz << std::endl;
       geomConv15.fill(type,subdetLayer,energy,lRealTime,posx,posy,posz);
 
       bool passTime = myDigitiser.passTimeCut(type,lRealTime);
@@ -496,7 +492,6 @@ int main(int argc, char** argv){//main
 	lHit.Print(std::cout);
       }
 
-      //p_xy[layer]->Fill(posx,posy,energy);
       //correct for time of flight
       p_timeSim->Fill(lRealTime);
       
@@ -506,11 +501,6 @@ int main(int argc, char** argv){//main
       //double absweight = myDetector.subDetectorByLayer(layer).absWeight;
       double absweight = (*ssvec)[layer].volX0trans()/(*ssvec)[1].volX0trans();
 
-      //if (versionNumber==12){
-	//absweight = layer%2==0 ?
-	//(*ssvec)[layer].volX0trans()/refThicknessEven : 
-	//(*ssvec)[layer].volX0trans()/refThicknessOdd;
-	//}
       Esim[sec] += energy*absweight;
       
     }//loop on hits
@@ -533,7 +523,7 @@ int main(int argc, char** argv){//main
     unsigned nAbove1_10 = 0;
     unsigned nAbove1_15 = 0;
     //for (unsigned iL=28; iL<52; ++iL){//only HCAL
-    //for (unsigned iL(0); iL<28; ++iL){//only ECAL
+    //for (unsigned iL=0; iL<28; ++iL){//only ECAL
     for (unsigned iL(0); iL<nLayers; ++iL){//loop on layers
       double absweight = (*ssvec)[iL].volX0trans()/(*ssvec)[1].volX0trans();
       TH2D *hist = geomConv2d5.get2DHist(iL,"E");
@@ -551,7 +541,6 @@ int main(int argc, char** argv){//main
 	  Eabove5+=(E-maxEavg5)*absweight;
 	}
 	if (E>1.) nAbove1_5++;
-	//if (E>0.5) nAbove1_5++;
       }
 
       hist = geomConv10.get2DHist(iL,"E");
@@ -559,18 +548,13 @@ int main(int argc, char** argv){//main
       if (Emax>maxE10) maxE10=Emax;
       for (int bin(1);bin<(hist->GetNbinsX()*hist->GetNbinsY()+1);++bin){
 	double E = hist->GetBinContent(bin);
-	//Etot10 += E*absweight;
-	Etot10 += E;
+	Etot10 += E*absweight;
         if (E>maxEavg10) {
 	  nAbove10++;
 	  Eabove10+=(E-maxEavg10)*absweight;
 	}
-        //if (E>1.) p_ETOT10->Fill(Etot10); 
         if (E>1.) nAbove1_10++;
-        //if (E>0.) nAbove1_10++;
-        //if (E>0.5) nAbove1_10++;
-	//if (E>1.) nAbove1_10++;
-        if (E>1.) h_Etot10 = Etot10;
+        if (E>1.) h_Etot10 += E*absweight;
       }
 
       hist = geomConv15.get2DHist(iL,"E");
@@ -588,9 +572,8 @@ int main(int argc, char** argv){//main
 
     }//end of the loop on layers
     double h_Etot10_ecal = 0.0;
-    double Etot10_ecal = 0.0;
     double h_Etot10_hcal = 0.0;
-    double Etot10_hcal = 0.0;
+    bool HCALevent = false;
 
     for (unsigned iL=0; iL<28; ++iL){//ECAL layers only
       double absweight = (*ssvec)[iL].volX0trans()/(*ssvec)[1].volX0trans(); 
@@ -598,25 +581,25 @@ int main(int argc, char** argv){//main
       double Emax_ecal = hist_ecal->GetBinContent(hist_ecal->GetMaximumBin());
       for (int bin(1);bin<(hist_ecal->GetNbinsX()*hist_ecal->GetNbinsY()+1);++bin){
         double E = hist_ecal->GetBinContent(bin);
-        Etot10_ecal += E*absweight;
-        if (E>1.) h_Etot10_ecal = Etot10_ecal;
+        if (E>1.) h_Etot10_ecal += E*absweight;
       }//end of the loop on bins
     }//end of the loop on layers
     
     for (unsigned iL=28; iL<52; ++iL){//HCAL layers only
+      HCALevent=true;
       double absweight = (*ssvec)[iL].volX0trans()/(*ssvec)[1].volX0trans();
       TH2D *hist_hcal = geomConv10.get2DHist(iL,"E");
       double Emax_hcal = hist_hcal->GetBinContent(hist_hcal->GetMaximumBin());
       for (int bin(1);bin<(hist_hcal->GetNbinsX()*hist_hcal->GetNbinsY()+1);++bin){
         double E = hist_hcal->GetBinContent(bin);   
-        Etot10_hcal += E*absweight;
-        if (E>1.) h_Etot10_hcal = Etot10_hcal;
+        if (E>1.) h_Etot10_hcal += E*absweight;
+        if(E>0) std::cout << "E = " << E << std::endl;
       }//end of the loop on bins
     }//end of the loop on layers
-
-    //p_G4_BHCALvsFHCAL->Fill(h_Etot10_ecal, h_Etot10_hcal); 
     p_ECALvsHCAL->Fill(h_Etot10_ecal, h_Etot10_hcal);
-
+    std::cout << "rechitvec->size() = " << rechitvec->size() << std::endl;
+    std::cout << "simhitvec->size() = " << simhitvec->size() << std::endl;
+    
     p_maxEhit_2d5->Fill(maxE2d5);
     p_maxEhit_5->Fill(maxE5);
     p_maxEhit_10->Fill(maxE10);
@@ -651,15 +634,11 @@ int main(int argc, char** argv){//main
     for (unsigned iH(0); iH<(*rechitvec).size(); ++iH){//loop on rechits
       HGCSSRecoHit lHit = (*rechitvec)[iH];
       if (debug>1) {
-	std::cout << " --  RecoHit " << iH << "/" << (*rechitvec).size() << " --" << std::endl
-		  << " --  position x,y " << lHit.get_x() << "," << lHit.get_y() << std::endl;
+	//std::cout << " --  RecoHit " << iH << "/" << (*rechitvec).size() << " --" << std::endl
+	//	  << " --  position x,y " << lHit.get_x() << "," << lHit.get_y() << std::endl;
 	lHit.Print(std::cout);
       }
       
-      //double posx = lHit.get_x();
-      //double posy = lHit.get_y();
-      //double posz = lHit.get_z();
-
       double energy = lHit.energy();//in MIP already...
       unsigned layer = lHit.layer();
 
@@ -677,13 +656,8 @@ int main(int argc, char** argv){//main
       double absweight = (*ssvec)[layer].voldEdx()/(*ssvec)[1].voldEdx();
 
       Ereco[sec] += energy*absweight;
-      //std::cout << "energy = " << energy << std::endl;
-      //std::cout << "absweight = " << absweight << std::endl;
-      //std::cout << "(*ssvec)[layer].volX0trans() = " << (*ssvec)[layer].volX0trans() << std::endl;
-      //std::cout << "(*ssvec)[1].volX0trans() = " << (*ssvec)[1].volX0trans() << std::endl; 
       double energy_sum = 0.0;
       energy_sum += energy;
-      //std::cout << "energy_sum = " << energy_sum << std::endl; 
    }//loop on rechits
     
     p_nRecHits->Fill((*rechitvec).size());
@@ -709,15 +683,6 @@ int main(int argc, char** argv){//main
     bool doFill = true;
     if (selectEarlyDecays && firstInteraction>5) doFill = false;
 
-
-    //fill histos
-    //double EtmpSim = 0;//[nSections];
-    //double EtmpRec = 0;//[nSections];  
-    //for (unsigned iD(0); iD<nSections; ++iD){
-    //EtmpSim[iD] = 0;
-    //EtmpRec[iD] = 0;
-    //}
-    
     double etotmips = 0;
     if (versionNumber==21) etotmips = Esim[0]+Esim[1]/G4BHcalSlope;
     else{ 
@@ -727,22 +692,14 @@ int main(int argc, char** argv){//main
     }
     
     for (unsigned iL(0);iL<nLayers;++iL){//loop on layers
-      if (debug) std::cout << " -- Layer " << iL 
-			   << " total sim E = " << EtotSim[iL] 
-			   << " total rec E = " << EtotRec[iL] 
-			   << " absweight = " << (*ssvec)[iL].volX0trans() << "/" << (*ssvec)[0].volX0trans() << " = " << (*ssvec)[iL].volX0trans()/(*ssvec)[0].volX0trans() << std::endl
-			   << std::endl;
+      //if (debug) std::cout << " -- Layer " << iL 
+      //		   << " total sim E = " << EtotSim[iL] 
+      //			   << " total rec E = " << EtotRec[iL] 
+      // 			   << " absweight = " << (*ssvec)[iL].volX0trans() << "/" << (*ssvec)[0].volX0trans() << " = " << (*ssvec)[iL].volX0trans()/(*ssvec)[0].volX0trans() << std::endl
+			   //<< std::endl;
       //unsigned sec =  myDetector.getSection(iL);
       if (doFill) p_EsimvsLayer->Fill(iL,EtotSim[iL]);
       if (doFill) p_ErecovsLayer->Fill(iL,EtotRec[iL]);
-      //EtmpSim += EtotSim[iL];
-      //EtmpRec += EtotRec[iL];
-      // if (doFill) {
-      // 	if (etotmips>0) p_EfracSim[iL]->Fill(EtmpSim/etotmips);
-      // 	else p_EfracSim[iL]->Fill(0);
-      // 	if (Etotcal>0) p_EfracReco[iL]->Fill(EtmpRec/Etotcal);
-      // 	else p_EfracReco[iL]->Fill(0);
-      // }
       EtotSim[iL] = 0;
       EtotRec[iL] = 0;
 
@@ -769,7 +726,7 @@ int main(int argc, char** argv){//main
   }//loop on entries
   
   //write
-  for (unsigned iD(0); iD<nSections; ++iD){
+  /*for (unsigned iD(0); iD<nSections; ++iD){
     std::cout << " -- Summary of sim energies " 
 	      << myDetector.detName(iD) << std::endl
 	      <<  p_Esim[iD]->GetEntries() 
@@ -803,7 +760,7 @@ int main(int argc, char** argv){//main
 	      << " rms/mean " << p_ErecoTotal->GetRMS()/p_ErecoTotal->GetMean()
 	      << " underflows " << p_ErecoTotal->GetBinContent(0)
 	      << " overflows " << p_ErecoTotal->GetBinContent(p_ErecoTotal->GetNbinsX()+1)
-	      << std::endl;
+	      << std::endl;*/
   outputFile->Write();
   //outputFile->Close();
   
