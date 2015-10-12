@@ -180,7 +180,9 @@ int main(int argc, char** argv){//main
       HGCSSSimHit lHit = (*simhitvec)[iH];
       if (lHit.silayer() >= nSiLayers) continue;
       unsigned layer = lHit.layer();
-      if (layer >= nLayers) continue;
+      std::cout << "layer before cuts = " << layer << std::endl;
+    
+     if (layer >= nLayers) continue;
       unsigned sec =  myDetector.getSection(layer);
       double posx = lHit.get_x(cellSize);
       double posy = lHit.get_y(cellSize);
@@ -276,12 +278,14 @@ int main(int argc, char** argv){//main
     for (unsigned iLayer=28; iLayer<52; ++iLayer){
       double absweight = (ssvec->at(iLayer)).volX0trans()/(ssvec->at(1)).volX0trans();
       TH2D *hist_hcal = geomConv10.get2DHist(iLayer,"E");
+      std::cout << "hist_hcal->GetEntries() = " << hist_hcal->GetEntries() << std::endl;
       for (int bin(1);bin<(hist_hcal->GetNbinsX()*hist_hcal->GetNbinsY()+1);++bin){
         E = hist_hcal->GetBinContent(bin);
         if(E>0) std::cout << "E = " << E << std::endl;
         if (E>1.) h_Etot10_hcal += E*absweight;
       }//end of the loop on bins  
     }//end of the loop on layers
+    std::cout << "h_Etot10_hcal = " << h_Etot10_hcal << std::endl;
     h_energyHCAL_AM->Fill(h_Etot10_hcal);      
 
   }//loop on entries
