@@ -1,4 +1,4 @@
-#include "HGCTimingAnalyzer/HGCTimingAnalyzer/interface/HGCTimingAnalyzer.h"
+#winclude "HGCTimingAnalyzer/HGCTimingAnalyzer/interface/HGCTimingAnalyzer.h"
 
 
 HGCTimingAnalyzer::HGCTimingAnalyzer(const edm::ParameterSet& iConfig)
@@ -113,14 +113,14 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
    for (unsigned int k=0; k<pfRecHit->size(); k++)
    { 
-     DetId detId_recHit(pfRecHit->at(k).detId());
+     DetId detId_recHit(pfRecHit->at(k).detId()); //casting into the "DetId" format
      edm::SortedCollection<HGCUncalibratedRecHit>::const_iterator hgchit = srcUncalibratedRecHitEE->find(detId_recHit);
      if(hgchit != srcUncalibratedRecHitEE->end())
      {
-       DetId detId_uncHit = hgchit->id();
-       if(detId_recHit.rawId()==detId_uncHit.rawId())
+       DetId detId_uncHit = hgchit->id(); //getting the HGCUncalibratedRecHit id()
+       if(detId_recHit.rawId()==detId_uncHit.rawId()) //accessed rawId() method to compare integers
        {
-         if(pfRecHit->at(k).time()>0) std::cout << "pfRecHit->at(k).time() = " << pfRecHit->at(k).time() << std::endl;
+         if(pfRecHit->at(k).time()>0) std::cout << "pfRecHit->at(k).time() = " << pfRecHit->at(k).time() << std::endl; 
        }
      }
    }  
