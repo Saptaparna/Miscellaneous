@@ -83,6 +83,7 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
      recHit_energy.push_back(recHitEnergy); 
      uint32_t recoDetId = pfRecHit->at(k).detId();
      recHit_recoDetId.push_back(recoDetId);
+     if(pfRecHit->at(k).time() > 0) std::cout << "pfRecHit->at(k).time() = " << pfRecHit->at(k).time() << std::endl;
    } 
  
    // get the gen particles
@@ -93,13 +94,13 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
    if( genevt.vertices_size() > 0.0)
    {
-    HepMC::FourVector temp = (*genevt.vertices_begin())->position() ;
-    genVertex_->SetXYZT(0.1*temp.x(),0.1*temp.y(),0.1*temp.z(),temp.t()/299.792458); // convert positions to cm and time to ns (it's in mm to start)
+     HepMC::FourVector temp = (*genevt.vertices_begin())->position() ;
+     genVertex_->SetXYZT(0.1*temp.x(),0.1*temp.y(),0.1*temp.z(),temp.t()/299.792458); // convert positions to cm and time to ns (it's in mm to start with)
 
-   dist2center_ = sqrt((vertex_x - temp.x())*(vertex_x - temp.x()) + (vertex_y - temp.y())*(vertex_y - temp.y()) + (vertex_z - temp.z())*(vertex_z - temp.z()));
-   //std::cout << "dist2center = " << dist2center << std::endl;
-   //computed using the gen Vertex which is anyway at (0, 0, 0, 0);
-   //float tof = (hit_it->time()-dist2center/(CLHEP::c_light)+1.0);
+     dist2center_ = sqrt((vertex_x - temp.x())*(vertex_x - temp.x()) + (vertex_y - temp.y())*(vertex_y - temp.y()) + (vertex_z - temp.z())*(vertex_z - temp.z()));
+     //std::cout << "dist2center = " << dist2center << std::endl;
+     //computed using the gen Vertex which is anyway at (0, 0, 0, 0);
+     //float tof = (hit_it->time()-dist2center/(CLHEP::c_light)+1.0);
    }
    /*
    for(size_t i = 0; i < genParticles->size(); ++ i)
@@ -107,15 +108,31 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
      const reco::GenParticle & p = dynamic_cast<const reco::GenParticle &>((*genParticles)[i]);
    }
    */
-   //HGCUncalibratedRecHit& uncalibEE; 
    edm::Handle<edm::SortedCollection<HGCUncalibratedRecHit> > srcUncalibratedRecHitEE;
-   iEvent.getByToken(srcUncalibratedRecHitEE_, srcUncalibratedRecHitEE); 
+   iEvent.getByToken(srcUncalibratedRecHitEE_, srcUncalibratedRecHitEE);
 
-   for (edm::SortedCollection<HGCUncalibratedRecHit>::const_iterator uncHit = srcUncalibratedRecHitEE->begin(); uncHit != srcUncalibratedRecHitEE->end(); uncHit++)
+   for (unsigned int k=0; k<pfRecHit->size(); k++)
+   { 
+     DetId detId_recHit(pfRecHit->at(k).detId());
+     edm::SortedCollection<HGCUncalibratedRecHit>::const_iterator hgchit = srcUncalibratedRecHitEE->find(detId_recHit);
+     if(hgchit != srcUncalibratedRecHitEE->end())
+     {
+       DetId detId_uncHit = hgchit->id();
+       if(detId_recHit.rawId()==detId_uncHit.rawId())
+       {
+         if(pfRecHit->at(k).time()>0) std::cout << "pfRecHit->at(k).time() = " << pfRecHit->at(k).time() << std::endl;
+       }
+     }
+   }  
+
+   /*for (edm::SortedCollection<HGCUncalibratedRecHit>::const_iterator uncHit = srcUncalibratedRecHitEE->begin(); uncHit != srcUncalibratedRecHitEE->end(); uncHit++)
    {
      DetId detid = uncHit->id(); 
      uint32_t subDetId = detid.subdetId();
-   }
+     
+   }*/
+
+   
 
    tree_->Fill();
 }
