@@ -92,6 +92,7 @@ int ReadHGCTiming_Tree(std::string infile, std::string outfile)
   TH1F *h_recHit_Time = new TH1F("h_recHit_Time", "h_recHit_Time; recHit Time [ns]; Events", 6000, 0.0, 6.0); h_recHit_Time->Sumw2();  
   TH2F *h_recHit_TimeVsEnergy = new TH2F("h_recHit_TimeVsEnergy", "h_recHit_TimeVsEnergy; Energy; recHit Time [ns]", 1000, 0, 10.0, 600, 0.0, 6.0); h_recHit_TimeVsEnergy->Sumw2();
   TH1F *h_recHit_TimeAverage = new TH1F("h_recHit_TimeAverage", "h_recHit_TimeAverage; recHit Time [ns]; Events", 6000, 0.0, 6.0); h_recHit_TimeAverage->Sumw2();
+  TH1F *h_recHit_HighestEnergyTime = new TH1F("h_recHit_HighestEnergyTime", "h_recHit_HighestEnergyTime; recHit Time [ns]; Events", 6000, 0.0, 6.0); h_recHit_HighestEnergyTime->Sumw2();
 
   int nEvents=tree->GetEntries();
   std::cout << "nEvents= " << nEvents << std::endl;
@@ -125,7 +126,7 @@ int ReadHGCTiming_Tree(std::string infile, std::string outfile)
     }
     std::cout << "sumOfHitEnergy = " << sumOfHitEnergy << std::endl;
 
-    h_recHit_TimeAverage->Fill(sumOfHitEnergyTimes/sumOfHitEnergy);
+    if(sumOfHitEnergy > 0.0) h_recHit_TimeAverage->Fill(sumOfHitEnergyTimes/sumOfHitEnergy);
 /*
     for (unsigned int j=0; j<recHit_energy->size(); j++)
     {
@@ -148,6 +149,7 @@ int ReadHGCTiming_Tree(std::string infile, std::string outfile)
       recHitV.SetXYZ(recHits.at(0).recHitX, recHits.at(0).recHitY, recHits.at(0).recHitZ);
       h_recHit_Phi->Fill(recHitV.Phi());
       h_recHit_Eta->Fill(recHitV.Eta());
+      h_recHit_HighestEnergyTime->Fill(recHits.at(0).recHitTime);
     }
 
   }//end of event loop
@@ -166,6 +168,7 @@ int ReadHGCTiming_Tree(std::string infile, std::string outfile)
   h_recHit_Time->Write();
   h_recHit_TimeVsEnergy->Write();
   h_recHit_TimeAverage->Write();
+  h_recHit_HighestEnergyTime->Write();
   tFile->Close();
   std::cout<<"Wrote output file "<<histfilename<<std::endl;
 
