@@ -37,6 +37,11 @@ bool sortRecHitsInDescendingE(RecHitInfo recHit1, RecHitInfo recHit2)
   return (recHit1.recHitE > recHit2.recHitE);
 }
 
+bool sortRecHitsInAscendingE(RecHitInfo recHit1, RecHitInfo recHit2)
+{
+  return (recHit1.recHitE < recHit2.recHitE);
+}
+
 int ReadHGCTiming_Tree(std::string infile, std::string outfile)
 {
   std::string inputfilename=(infile+".root").c_str();
@@ -93,6 +98,11 @@ int ReadHGCTiming_Tree(std::string infile, std::string outfile)
   TH2F *h_recHit_TimeVsEnergy = new TH2F("h_recHit_TimeVsEnergy", "h_recHit_TimeVsEnergy; Energy; recHit Time [ns]", 1000, 0, 10.0, 600, 0.0, 6.0); h_recHit_TimeVsEnergy->Sumw2();
   TH1F *h_recHit_TimeAverage = new TH1F("h_recHit_TimeAverage", "h_recHit_TimeAverage; recHit Time [ns]; Events", 6000, 0.0, 6.0); h_recHit_TimeAverage->Sumw2();
   TH1F *h_recHit_HighestEnergyTime = new TH1F("h_recHit_HighestEnergyTime", "h_recHit_HighestEnergyTime; recHit Time [ns]; Events", 6000, 0.0, 6.0); h_recHit_HighestEnergyTime->Sumw2();
+  TH1F *h_recHit_TimeThreshold = new TH1F("h_recHit_TimeThreshold", "h_recHit_TimeThreshold; recHit Time [ns]; Events", 6000, 0.0, 6.0); h_recHit_TimeThreshold->Sumw2();
+  TH1F *h_recHit_energyOfHitsTime2 = new TH1F("h_recHit_energyOfHitsTime2", "Energy of hits with time > 2 [ns]; recHit Energy; Events", 1000, 0, 10.0); h_recHit_energyOfHitsTime2->Sumw2();
+  TH1F *h_recHit_energyOfHitsTime1To2 = new TH1F("h_recHit_energyOfHitsTime1To2", "Energy of hits with time > 0 and time < 2 [ns]; recHit Energy; Events", 1000, 0, 10.0); h_recHit_energyOfHitsTime1To2->Sumw2();
+  TH1F *h_recHit_Time_UnweightedAverage = new TH1F("h_recHit_Time_UnweightedAverage", "RecHit Time Unweighted Average; Time [ns]; Events", 1000, 0, 100.0); h_recHit_Time_UnweightedAverage->Sumw2();
+
 
   int nEvents=tree->GetEntries();
   std::cout << "nEvents= " << nEvents << std::endl;
@@ -107,34 +117,27 @@ int ReadHGCTiming_Tree(std::string infile, std::string outfile)
     std::vector<RecHitInfo> recHits;
     double sumOfHitEnergy = 0.0;
     double sumOfHitEnergyTimes = 0.0;
+    double sumOfHitTimes = 0.0;
     for (unsigned int j=0; j<recHit_energy->size(); j++)
     {
       RecHitInfo recHit;
-      //recHit.recHitE = recHit_energy->at(j);
       recHit.recHitE = recHit_energy->at(j)*10e-6;
       recHit.recHitX = recHit_x->at(j);
       recHit.recHitY = recHit_y->at(j);
       recHit.recHitZ = recHit_z->at(j);  
       recHit.recHitTime = recHit_time->at(j);
-      sumOfHitEnergyTimes += recHit.recHitE*recHit.recHitTime;
-      sumOfHitEnergy += recHit.recHitE;
-      //h_recHit_Time->Fill(gRandom->Gaus(recHit.recHitTime, 0.01));
-      //h_recHit_Time->Fill(recHit.recHitTime);
-      h_recHit_Time->Fill(recHit.recHitTime, recHit.recHitE);
+      if(recHit.recHitE > 0.1) sumOfHitTimes += recHit.recHitTime;
+      if(recHit.recHitE > 0.1) sumOfHitEnergyTimes += recHit.recHitE*recHit.recHitTime;
+      if(recHit.recHitE > 0.1) sumOfHitEnergy += recHit.recHitE;
+      if(recHit.recHitE> 0.1) h_recHit_Time->Fill(recHit.recHitTime, recHit.recHitE);
       h_recHit_TimeVsEnergy->Fill(recHit.recHitE, recHit.recHitTime);//TH2F
-      recHits.push_back(recHit);
+      if(recHit.recHitTime > 2.0) h_recHit_energyOfHitsTime2->Fill(recHit.recHitE);
+      if(recHit.recHitTime > 0 and recHit.recHitTime <= 2.0)h_recHit_energyOfHitsTime1To2->Fill(recHit.recHitE);
+      if(recHit.recHitE> 0.1) recHits.push_back(recHit);
     }
-    std::cout << "sumOfHitEnergy = " << sumOfHitEnergy << std::endl;
-
+    if(sumOfHitTimes > 0.0 and recHits.size() > 0) h_recHit_Time_UnweightedAverage->Fill(sumOfHitTimes/recHits.size());
     if(sumOfHitEnergy > 0.0) h_recHit_TimeAverage->Fill(sumOfHitEnergyTimes/sumOfHitEnergy);
-/*
-    for (unsigned int j=0; j<recHit_energy->size(); j++)
-    {
-      double weight = (recHit_energy->at(j)*10e-6)/sumOfHitEnergy;
-      std::cout << "weight = " << weight << endl;
-      h_recHit_Time->Fill(recHit_time->at(j), weight);
-    }
-*/
+    
     std::sort(recHits.begin(), recHits.end(), sortRecHitsInDescendingE);
     
     TVector3 recHitV;
@@ -151,7 +154,6 @@ int ReadHGCTiming_Tree(std::string infile, std::string outfile)
       h_recHit_Eta->Fill(recHitV.Eta());
       h_recHit_HighestEnergyTime->Fill(recHits.at(0).recHitTime);
     }
-
   }//end of event loop
 
   std::string histfilename=(outfile+".root").c_str();
@@ -169,6 +171,10 @@ int ReadHGCTiming_Tree(std::string infile, std::string outfile)
   h_recHit_TimeVsEnergy->Write();
   h_recHit_TimeAverage->Write();
   h_recHit_HighestEnergyTime->Write();
+  h_recHit_TimeThreshold->Write();
+  h_recHit_energyOfHitsTime2->Write();
+  h_recHit_energyOfHitsTime1To2->Write();
+  h_recHit_Time_UnweightedAverage->Write();
   tFile->Close();
   std::cout<<"Wrote output file "<<histfilename<<std::endl;
 
