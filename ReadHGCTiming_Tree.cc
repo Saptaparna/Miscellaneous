@@ -95,13 +95,13 @@ int ReadHGCTiming_Tree(std::string infile, std::string outfile)
   TH1F *h_recHit_Phi = new TH1F("h_recHit_Phi", "h_recHit_Phi; recHit #phi; Events", 80,  -4,   4); h_recHit_Phi->Sumw2();
   TH1F *h_recHit_Eta = new TH1F("h_recHit_Eta", "h_recHit_Eta; recHit #eta; Events", 120,  -6,  6); h_recHit_Eta->Sumw2();
   TH1F *h_recHit_Time = new TH1F("h_recHit_Time", "h_recHit_Time; recHit Time [ns]; Events", 6000, 0.0, 6.0); h_recHit_Time->Sumw2();  
-  TH2F *h_recHit_TimeVsEnergy = new TH2F("h_recHit_TimeVsEnergy", "h_recHit_TimeVsEnergy; Energy; recHit Time [ns]", 1000, 0, 10.0, 600, 0.0, 6.0); h_recHit_TimeVsEnergy->Sumw2();
+  TH2F *h_recHit_TimeVsEnergy = new TH2F("h_recHit_TimeVsEnergy", "h_recHit_TimeVsEnergy; Energy; recHit Time [ns]", 1000, 0, 10.0, 1200, -6.0, 6.0); h_recHit_TimeVsEnergy->Sumw2();
   TH1F *h_recHit_TimeAverage = new TH1F("h_recHit_TimeAverage", "h_recHit_TimeAverage; recHit Time [ns]; Events", 6000, 0.0, 6.0); h_recHit_TimeAverage->Sumw2();
   TH1F *h_recHit_HighestEnergyTime = new TH1F("h_recHit_HighestEnergyTime", "h_recHit_HighestEnergyTime; recHit Time [ns]; Events", 6000, 0.0, 6.0); h_recHit_HighestEnergyTime->Sumw2();
   TH1F *h_recHit_TimeThreshold = new TH1F("h_recHit_TimeThreshold", "h_recHit_TimeThreshold; recHit Time [ns]; Events", 6000, 0.0, 6.0); h_recHit_TimeThreshold->Sumw2();
   TH1F *h_recHit_energyOfHitsTime2 = new TH1F("h_recHit_energyOfHitsTime2", "Energy of hits with time > 2 [ns]; recHit Energy; Events", 1000, 0, 10.0); h_recHit_energyOfHitsTime2->Sumw2();
   TH1F *h_recHit_energyOfHitsTime1To2 = new TH1F("h_recHit_energyOfHitsTime1To2", "Energy of hits with time > 0 and time < 2 [ns]; recHit Energy; Events", 1000, 0, 10.0); h_recHit_energyOfHitsTime1To2->Sumw2();
-  TH1F *h_recHit_Time_UnweightedAverage = new TH1F("h_recHit_Time_UnweightedAverage", "RecHit Time Unweighted Average; Time [ns]; Events", 1000, 0, 100.0); h_recHit_Time_UnweightedAverage->Sumw2();
+  TH1F *h_recHit_Time_UnweightedAverage = new TH1F("h_recHit_Time_UnweightedAverage", "RecHit Time Unweighted Average; Time [ns]; Events", 2000, -100.0, 100.0); h_recHit_Time_UnweightedAverage->Sumw2();
 
 
   int nEvents=tree->GetEntries();
@@ -135,8 +135,8 @@ int ReadHGCTiming_Tree(std::string infile, std::string outfile)
       if(recHit.recHitTime > 0 and recHit.recHitTime <= 2.0)h_recHit_energyOfHitsTime1To2->Fill(recHit.recHitE);
       if(recHit.recHitE> 0.1) recHits.push_back(recHit);
     }
-    if(sumOfHitTimes > 0.0 and recHits.size() > 0) h_recHit_Time_UnweightedAverage->Fill(sumOfHitTimes/recHits.size());
-    if(sumOfHitEnergy > 0.0) h_recHit_TimeAverage->Fill(sumOfHitEnergyTimes/sumOfHitEnergy);
+    if(sumOfHitTimes > 0.0 and recHits.size() > 0) h_recHit_Time_UnweightedAverage->Fill(sumOfHitTimes/recHits.size() - 1.0);
+    if(sumOfHitEnergy > 0.0) h_recHit_TimeAverage->Fill(sumOfHitEnergyTimes/sumOfHitEnergy - 1.0);
     
     std::sort(recHits.begin(), recHits.end(), sortRecHitsInDescendingE);
     
