@@ -67,6 +67,12 @@
 #include "RecoLocalCalo/HGCalRecProducers/interface/HGCalRecHitWorkerBaseClass.h"
 #include "RecoLocalCalo/HGCalRecAlgos/interface/HGCalRecHitSimpleAlgo.h"
 #include "Geometry/HGCalGeometry/interface/HGCalGeometry.h"
+#include "Geometry/HGCalCommonData/interface/HGCalParameters.h"
+#include "Geometry/HGCalCommonData/interface/HGCalDDDConstants.h"
+
+#include "FWCore/Framework/interface/ESTransientHandle.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+
 #include "TFile.h"
 #include "TTree.h"
 #include "TBranch.h"
@@ -107,6 +113,7 @@ class HGCTimingAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       std::vector<float> recHit_energy; 
       std::vector<float> recHit_time;
       std::vector<uint32_t> recHit_recoDetId; 
+      std::vector<float> uncRecHit_time;
       float dist2center_, tof_;
       TLorentzVector *genVertex_;
       TBranch *branch_;      
@@ -118,6 +125,8 @@ class HGCTimingAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       edm::EDGetTokenT<std::vector<reco::PFRecHit> > srcPFRecHit_;
       edm::EDGetTokenT<std::vector<PCaloHit> > srcCaloHit_;
       edm::EDGetTokenT<edm::SortedCollection<HGCUncalibratedRecHit> > srcUncalibratedRecHitEE_; 
+      edm::EDGetTokenT<edm::SortedCollection<HGCUncalibratedRecHit> > srcUncalibratedRecHitHEB_;
+      edm::EDGetTokenT<edm::SortedCollection<HGCUncalibratedRecHit> > srcUncalibratedRecHitHEF_;
       };
       //
       // //

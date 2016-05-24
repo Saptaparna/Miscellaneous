@@ -1,4 +1,4 @@
-#winclude "HGCTimingAnalyzer/HGCTimingAnalyzer/interface/HGCTimingAnalyzer.h"
+#include "HGCTimingAnalyzer/HGCTimingAnalyzer/interface/HGCTimingAnalyzer.h"
 
 
 HGCTimingAnalyzer::HGCTimingAnalyzer(const edm::ParameterSet& iConfig)
@@ -8,7 +8,9 @@ HGCTimingAnalyzer::HGCTimingAnalyzer(const edm::ParameterSet& iConfig)
     srcHepmcevent_ (consumes<edm::HepMCProduct>(iConfig.getParameter<edm::InputTag> ("srcHepmcevent"))),
     srcPFRecHit_ (consumes<std::vector<reco::PFRecHit> >(iConfig.getParameter<edm::InputTag> ("srcPFRecHit"))),
     srcCaloHit_ (consumes<std::vector<PCaloHit> >(iConfig.getParameter<edm::InputTag> ("srcCaloHit"))),
-    srcUncalibratedRecHitEE_ (consumes<edm::SortedCollection<HGCUncalibratedRecHit> >(iConfig.getParameter<edm::InputTag> ("srcUncalibratedRecHitEE")))
+    srcUncalibratedRecHitEE_ (consumes<edm::SortedCollection<HGCUncalibratedRecHit> >(iConfig.getParameter<edm::InputTag> ("srcUncalibratedRecHitEE"))),
+    srcUncalibratedRecHitHEB_ (consumes<edm::SortedCollection<HGCUncalibratedRecHit> >(iConfig.getParameter<edm::InputTag> ("srcUncalibratedRecHitHEB"))),
+    srcUncalibratedRecHitHEF_ (consumes<edm::SortedCollection<HGCUncalibratedRecHit> >(iConfig.getParameter<edm::InputTag> ("srcUncalibratedRecHitHEF")))
 {
    usesResource("TFileService");
 }
@@ -39,6 +41,7 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    recHit_energy.clear();
    recHit_time.clear();
    recHit_recoDetId.clear();   
+   uncRecHit_time.clear();
    dist2center_ = -99999.0;
 
    edm::Handle<std::vector<SimTrack> > simTk;
@@ -56,36 +59,9 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
      if (simTk->at(j).noVertex()) continue;
      int vertIndex = simTk->at(j).vertIndex();
      vertex_x = simVtx->at(vertIndex).position().x();
-     //std::cout << "vertex_x with track information = " << vertex_x << std::endl;
      vertex_y = simVtx->at(vertIndex).position().y();
      vertex_z = simVtx->at(vertIndex).position().z();
    }
-/*
-   vertex_x = 0.0;
-   for (unsigned int k=0; k<simVtx->size(); k++)
-   {
-     vertex_x = simVtx->at(k).position().x();
-     std::cout << "vertex_x without track information = " << vertex_x << std::endl; 
-   }
-*/
-   edm::Handle<std::vector<reco::PFRecHit> > pfRecHit;
-   iEvent.getByToken(srcPFRecHit_, pfRecHit);
-
-   for (unsigned int k=0; k<pfRecHit->size(); k++)
-   {
-     double recHitx = pfRecHit->at(k).position().x();
-     recHit_x.push_back(recHitx);
-     double recHity = pfRecHit->at(k).position().y();
-     recHit_y.push_back(recHity);
-     double recHitz = pfRecHit->at(k).position().z();
-     recHit_z.push_back(recHitz);
-     double recHitEnergy = (pfRecHit->at(k).energy())*1e6; 
-     recHit_energy.push_back(recHitEnergy); 
-     uint32_t recoDetId = pfRecHit->at(k).detId();
-     recHit_recoDetId.push_back(recoDetId);
-     if(pfRecHit->at(k).time() > 0) std::cout << "pfRecHit->at(k).time() = " << pfRecHit->at(k).time() << std::endl;
-   } 
- 
    // get the gen particles
    edm::Handle<edm::HepMCProduct>  hepmcevent;
    iEvent.getByToken(srcHepmcevent_, hepmcevent);
@@ -98,9 +74,6 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
      genVertex_->SetXYZT(0.1*temp.x(),0.1*temp.y(),0.1*temp.z(),temp.t()/299.792458); // convert positions to cm and time to ns (it's in mm to start with)
 
      dist2center_ = sqrt((vertex_x - temp.x())*(vertex_x - temp.x()) + (vertex_y - temp.y())*(vertex_y - temp.y()) + (vertex_z - temp.z())*(vertex_z - temp.z()));
-     //std::cout << "dist2center = " << dist2center << std::endl;
-     //computed using the gen Vertex which is anyway at (0, 0, 0, 0);
-     //float tof = (hit_it->time()-dist2center/(CLHEP::c_light)+1.0);
    }
    /*
    for(size_t i = 0; i < genParticles->size(); ++ i)
@@ -108,24 +81,104 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
      const reco::GenParticle & p = dynamic_cast<const reco::GenParticle &>((*genParticles)[i]);
    }
    */
+   edm::Handle<std::vector<reco::PFRecHit> > pfRecHit;
+   iEvent.getByToken(srcPFRecHit_, pfRecHit);
+
    edm::Handle<edm::SortedCollection<HGCUncalibratedRecHit> > srcUncalibratedRecHitEE;
    iEvent.getByToken(srcUncalibratedRecHitEE_, srcUncalibratedRecHitEE);
 
+   edm::Handle<edm::SortedCollection<HGCUncalibratedRecHit> > srcUncalibratedRecHitHEB;
+   iEvent.getByToken(srcUncalibratedRecHitHEB_, srcUncalibratedRecHitHEB);
+
+   edm::Handle<edm::SortedCollection<HGCUncalibratedRecHit> > srcUncalibratedRecHitHEF;
+   iEvent.getByToken(srcUncalibratedRecHitHEF_, srcUncalibratedRecHitHEF);
+
    for (unsigned int k=0; k<pfRecHit->size(); k++)
    { 
-     DetId detId_recHit(pfRecHit->at(k).detId()); //casting into the "DetId" format
-     edm::SortedCollection<HGCUncalibratedRecHit>::const_iterator hgchit = srcUncalibratedRecHitEE->find(detId_recHit);
-     if(hgchit != srcUncalibratedRecHitEE->end())
+     DetId detId_recHit(pfRecHit->at(k).detId());
+     edm::SortedCollection<HGCUncalibratedRecHit>::const_iterator hgchitEE = srcUncalibratedRecHitEE->find(detId_recHit);
+     if(hgchitEE != srcUncalibratedRecHitEE->end())
      {
-       DetId detId_uncHit = hgchit->id(); //getting the HGCUncalibratedRecHit id()
-       if(detId_recHit.rawId()==detId_uncHit.rawId()) //accessed rawId() method to compare integers
+       DetId detId_uncHit = hgchitEE->id();
+       if(detId_recHit.rawId()==detId_uncHit.rawId())
        {
-         if(pfRecHit->at(k).time()>0) std::cout << "pfRecHit->at(k).time() = " << pfRecHit->at(k).time() << std::endl; 
+         if(pfRecHit->at(k).time()>0)//hgchit->jitter() for timing information 
+         { 
+           recHit_x.push_back(pfRecHit->at(k).position().x());
+           recHit_y.push_back(pfRecHit->at(k).position().y());
+           recHit_z.push_back(pfRecHit->at(k).position().z());
+           recHit_energy.push_back(pfRecHit->at(k).energy());
+           recHit_recoDetId.push_back(pfRecHit->at(k).detId());
+           recHit_time.push_back(pfRecHit->at(k).time());
+           uncRecHit_time.push_back(hgchitEE->jitter());
+         }        
        }
      }
-   }  
+     edm::SortedCollection<HGCUncalibratedRecHit>::const_iterator hgchitHEB = srcUncalibratedRecHitHEB->find(detId_recHit);
+     if(hgchitHEB != srcUncalibratedRecHitHEB->end())
+     { 
+       DetId detId_uncHit = hgchitHEB->id();  
+       if(detId_recHit.rawId()==detId_uncHit.rawId())
+       {
+         if(pfRecHit->at(k).time()>0)
+         {
+           recHit_x.push_back(pfRecHit->at(k).position().x());
+           recHit_y.push_back(pfRecHit->at(k).position().y());
+           recHit_z.push_back(pfRecHit->at(k).position().z());
+           recHit_energy.push_back(pfRecHit->at(k).energy());
+           recHit_recoDetId.push_back(pfRecHit->at(k).detId());
+           recHit_time.push_back(pfRecHit->at(k).time());
+           uncRecHit_time.push_back(hgchitHEB->jitter());
+         }
+       }
+     }
+     edm::SortedCollection<HGCUncalibratedRecHit>::const_iterator hgchitHEF = srcUncalibratedRecHitHEF->find(detId_recHit);
+     if(hgchitHEF != srcUncalibratedRecHitHEF->end())
+     {
+       DetId detId_uncHit = hgchitHEF->id();
+       if(detId_recHit.rawId()==detId_uncHit.rawId())
+       {
+         if(pfRecHit->at(k).time()>0)
+         {
+           recHit_x.push_back(pfRecHit->at(k).position().x());
+           recHit_y.push_back(pfRecHit->at(k).position().y());
+           recHit_z.push_back(pfRecHit->at(k).position().z());
+           recHit_energy.push_back(pfRecHit->at(k).energy());
+           recHit_recoDetId.push_back(pfRecHit->at(k).detId());
+           recHit_time.push_back(pfRecHit->at(k).time());
+           uncRecHit_time.push_back(hgchitHEF->jitter());
+         }
+       }
+     }
+   }
 
-   /*for (edm::SortedCollection<HGCUncalibratedRecHit>::const_iterator uncHit = srcUncalibratedRecHitEE->begin(); uncHit != srcUncalibratedRecHitEE->end(); uncHit++)
+    
+/*
+   edm::ESHandle<HGCalDDDConstants> hgcaldddconstants;
+   
+   //iSetup.get<IdealGeometryRecord>().get("HGCalHESiliconSensitive", hgcaldddconstants);
+   //iSetup.get<IdealGeometryRecord>().get("HGCalHEScintillatorSensitive", hgcaldddconstants);
+   bool reco_ = true;
+   const HGCalDDDConstants hgdc(*hgcaldddconstants);
+   std::cout << " Layers = "    << hgdc.layers(reco_) 
+	     << " Sectors = "   << hgdc.sectors()     << " Minimum Slope = "
+	     << hgdc.minSlope() << std::endl;
+
+
+   edm::ESHandle<HGCalGeometry> hefGeom;
+   iSetup.get<IdealGeometryRecord>().get("HGCalHEScintillatorSensitive",hefGeom);
+   //iSetup.get<IdealGeometryRecord>().get("HGCalHEScintillatorSensitive", hefGeom);
+   //iSetup.get<IdealGeometryRecord>().get("HGCalEESensitive", hefGeom);
+   const HGCalTopology &topo=hefGeom->topology();
+   const HGCalDDDConstants &dddConst=topo.dddConstants(); 
+   bool reco_ = true;
+
+   std::cout << "dddConst.layers = " << dddConst.layers(reco_) 
+             << " Sectors = "        << dddConst.sectors()     
+             << " Minimum Slope = "  << dddConst.minSlope()
+             << std::endl;
+
+   for (edm::SortedCollection<HGCUncalibratedRecHit>::const_iterator uncHit = srcUncalibratedRecHitEE->begin(); uncHit != srcUncalibratedRecHitEE->end(); uncHit++)
    {
      DetId detid = uncHit->id(); 
      uint32_t subDetId = detid.subdetId();
@@ -154,6 +207,8 @@ HGCTimingAnalyzer::beginJob()
   branch_=tree_->Branch("recHit_x", &recHit_x);
   branch_=tree_->Branch("recHit_y", &recHit_y);
   branch_=tree_->Branch("recHit_z", &recHit_z);
+  branch_=tree_->Branch("recHit_time", &recHit_time);
+  branch_=tree_->Branch("uncRecHit_time", &uncRecHit_time);
   branch_=tree_->Branch("GenVertex", "TLorentzVector", &genVertex_);
   branch_=tree_->Branch("dist2center", &dist2center_, "dist2center/F");
 }
