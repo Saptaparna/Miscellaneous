@@ -52,7 +52,7 @@ std::string itoa(int i)
   return ret;
 }
 
-int ReadHGCTiming_Tree_May26(std::string infile, std::string outfile)
+int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
 {
   std::string inputfilename=(infile+".root").c_str();
   TChain *tree=new TChain("hgctiming/HGCTiming");
@@ -117,9 +117,14 @@ int ReadHGCTiming_Tree_May26(std::string infile, std::string outfile)
   TH1F *h_recHit_PathDiff = new TH1F("h_recHit_PathDiff", "Path Difference; Distance [cm]; Events", 150, 300, 450); h_recHit_PathDiff->Sumw2();
   TH2F *h_recHit_TimeVsrecHitE = new TH2F("h_recHit_TimeVsrecHitE", "RecHit Time Versus Energy; Time [ns]; Energy", 100, 5, 15.0, 1000, 0.0, 0.5); h_recHit_TimeVsrecHitE->Sumw2();
   TH2F *h_recHit_RawTimeVsrecHitE = new TH2F("h_recHit_RawTimeVsrecHitE", "Raw RecHit Time Versus Energy; Raw recHit Time [ns]; Energy", 200, -10.0, 10.0, 1000, 0.0, 0.5); h_recHit_RawTimeVsrecHitE->Sumw2();
+  TH2F *h_recHitRatioVsE = new TH2F("h_recHitRatioVsE", "Ratio of Energy/Distance Versus Path Difference; Path Difference; Energy/Path Difference", 300, 300.0, 450.0, 5000, 0.0, 0.5); h_recHitRatioVsE->Sumw2(); 
+  TH1F *h_recHit_Energy = new TH1F("h_recHit_Energy", "Reconstructed Hit Energy; Energy; Events", 1000, 0.0, 0.5); h_recHit_Energy->Sumw2();
 
   int nEvents=tree->GetEntries();
   std::cout << "nEvents= " << nEvents << std::endl;
+  TF1 *bs_x = new TF1("bs_x", "exp(-0.5*((x-0.243996)/0.00143119)**2)", -0.30, 0.30);
+  TF1 *bs_y = new TF1("bs_y", "exp(-0.5*((x-0.392837)/0.00142161)**2)", -0.40, 0.40);
+  TF1 *bs_z = new TF1("bs_z", "exp(-0.5*((x-0.381877)/6.0673)**2)", -0.40, 0.40);
   for (int i=0; i<nEvents; ++i)
   {
     tree->GetEvent(i);
@@ -132,6 +137,10 @@ int ReadHGCTiming_Tree_May26(std::string infile, std::string outfile)
     double sumOfHitEnergy = 0.0;
     double sumOfHitEnergyTimes = 0.0;
     double sumOfHitTimes = 0.0;
+    double vertex_x_gtoy = bs_x->GetRandom();    
+    double vertex_y_gtoy = bs_y->GetRandom();
+    double vertex_z_gtoy = bs_z->GetRandom();
+
     for (unsigned int j=0; j<recHit_energy->size(); j++)
     {
       RecHitInfo recHit;
@@ -144,25 +153,26 @@ int ReadHGCTiming_Tree_May26(std::string infile, std::string outfile)
       //double pathDifference = (sqrt(recHit_x->at(j)*recHit_x->at(j) + recHit_y->at(j)*recHit_y->at(j) + (recHit_z->at(j)+d)*(recHit_z->at(j)+d))); 
       double pathDifference = (sqrt(recHit_x->at(j)*recHit_x->at(j) + recHit_y->at(j)*recHit_y->at(j) + (recHit_z->at(j))*(recHit_z->at(j))));
       recHit.recHitTime = recHit_time->at(j) + (pathDifference/(speedOfLight)) - 1.0;
-      if(recHit.recHitE > 0.50) sumOfHitTimes += recHit.recHitTime;
-      if(recHit.recHitE > 0.50) sumOfHitEnergyTimes += recHit.recHitE*recHit.recHitTime;
-      if(recHit.recHitE > 0.50) sumOfHitEnergy += recHit.recHitE;
-      if(recHit.recHitE > 0.50) h_recHit_Time->Fill(recHit.recHitTime, recHit.recHitE);
-      if(recHit.recHitE > 0.50) h_recHit_Time->Fill(recHit.recHitTime, recHit.recHitE);
-      if(recHit.recHitE > 0.50) h_recHit_TimeVsEnergy->Fill(recHit.recHitE, recHit.recHitTime);//TH2F
-      if(recHit.recHitE > 0.50) h_recHit_PathDiff->Fill(pathDifference);
+      if(recHit.recHitE > 0.01) sumOfHitTimes += recHit.recHitTime;
+      if(recHit.recHitE > 0.01) sumOfHitEnergyTimes += recHit.recHitE*recHit.recHitTime;
+      if(recHit.recHitE > 0.01) sumOfHitEnergy += recHit.recHitE;
+      if(recHit.recHitE > 0.01) h_recHit_Energy->Fill(recHit.recHitE);
+      h_recHit_Energy->Fill(recHit.recHitE);
+      if(recHit.recHitE > 0.01) h_recHit_Time->Fill(recHit.recHitTime, recHit.recHitE);
+      if(recHit.recHitE > 0.01) h_recHit_TimeVsEnergy->Fill(recHit.recHitE, recHit.recHitTime);//TH2F
+      if(recHit.recHitE > 0.01) h_recHit_PathDiff->Fill(pathDifference);
       if(recHit.recHitTime > 13.0) h_recHit_energyOfHitsTime2->Fill(recHit.recHitE);
       else if(recHit.recHitTime > 9 and recHit.recHitTime <= 13.0)h_recHit_energyOfHitsTime1To2->Fill(recHit.recHitE);
-      if(recHit.recHitE> 0.50) h_recHit_TimeVsrecHitZ->Fill(recHit.recHitTime, pathDifference, recHit.recHitE);
+      if(recHit.recHitE> 0.01) h_recHit_TimeVsrecHitZ->Fill(recHit.recHitTime, pathDifference, recHit.recHitE);
       h_recHit_TimeVsrecHitE->Fill(recHit.recHitTime, recHit.recHitE);
       h_recHit_RawTimeVsrecHitZ->Fill(recHit_time->at(j), pathDifference, recHit.recHitE);
       h_recHit_RawTimeVsrecHitE->Fill(recHit_time->at(j), recHit.recHitE);
-      if(recHit.recHitE> 0.50) recHits.push_back(recHit);
+      h_recHitRatioVsE->Fill(pathDifference, recHit_energy->at(j));
+      if(recHit.recHitE> 0.01) recHits.push_back(recHit);
     }//end loop over hits
     
     if(sumOfHitTimes > 0.0 and recHits.size() > 0) h_recHit_Time_UnweightedAverage->Fill(sumOfHitTimes/recHits.size());
     if(sumOfHitEnergy > 0.0) h_recHit_TimeAverage->Fill(sumOfHitEnergyTimes/sumOfHitEnergy);
-   
 
     std::sort(recHits.begin(), recHits.end(), sortRecHitsInDescendingE);
     
@@ -209,7 +219,9 @@ int ReadHGCTiming_Tree_May26(std::string infile, std::string outfile)
   h_recHit_PathDiff->Write();
   h_recHit_TimeVsrecHitE->Write();
   h_recHit_RawTimeVsrecHitZ->Write();
-  h_recHit_RawTimeVsrecHitE->Write(); 
+  h_recHit_RawTimeVsrecHitE->Write();
+  h_recHit_Energy->Write(); 
+  h_recHitRatioVsE->Write();
   tFile->Close();
   std::cout<<"Wrote output file "<<histfilename<<std::endl;
 
