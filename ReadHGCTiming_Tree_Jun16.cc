@@ -53,6 +53,12 @@ std::string itoa(int i)
   return ret;
 }
 
+bool sameVal(double a, double b)
+{
+    return fabs(a - b) < 3.000e-03;
+}
+
+
 int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
 {
   std::string inputfilename=(infile+".root").c_str();
@@ -109,10 +115,14 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
   TH1F *h_recHit_Time = new TH1F("h_recHit_Time", "h_recHit_Time; recHit Time [ns]; Events", 20000, -100.0, 100.0); h_recHit_Time->Sumw2();  
   TH2F *h_recHit_TimeVsEnergy = new TH2F("h_recHit_TimeVsEnergy", "h_recHit_TimeVsEnergy; Energy; recHit Time [ns]", 1000, 0, 0.1, 2000, -100.0, 100.0); h_recHit_TimeVsEnergy->Sumw2();
   TH1F *h_recHit_TimeAverage = new TH1F("h_recHit_TimeAverage", "h_recHit_TimeAverage; recHit Time [ns]; Events", 20000, -100.0, 100.0); h_recHit_TimeAverage->Sumw2();
+  TH1F *h_Time_AverageWindow1 = new TH1F("h_Time_AverageWindow1", "h_Time_AverageWindow1; recHit Time [ns]; Events", 20000, -100.0, 100.0); h_Time_AverageWindow1->Sumw2();
+  TH1F *h_Time_AverageWindow2 = new TH1F("h_Time_AverageWindow2", "h_Time_AverageWindow2; recHit Time [ns]; Events", 20000, -100.0, 100.0); h_Time_AverageWindow2->Sumw2();
   TH1F *h_recHit_95TimeAverage = new TH1F("h_recHit_95TimeAverage", "h_recHit_95TimeAverage; recHit Time [ns]; Events", 20000, -100.0, 100.0); h_recHit_95TimeAverage->Sumw2();
   TH1F *h_recHit_95HighestEnergyTime = new TH1F("h_recHit_95HighestEnergyTime", "h_recHit_95HighestEnergyTime; recHit Time [ns]; Events", 20000, -100.0, 100.0); h_recHit_95HighestEnergyTime->Sumw2();
   TH1F *h_Time_pathDiffWindow = new TH1F("h_Time_pathDiffWindow", "h_Time_pathDiffWindow; recHit Time [ns]; Events", 20000, -100.0, 100.0); h_Time_pathDiffWindow->Sumw2();
   TH1F *h_Time_pathDiffWindowUnweighted = new TH1F("h_Time_pathDiffWindowUnweighted", "h_Time_pathDiffWindowUnweighted; recHit Time [ns]; Events", 20000, -100.0, 100.0); h_Time_pathDiffWindowUnweighted->Sumw2();
+  TH1F *h_Time_pathDiffWindow2 = new TH1F("h_Time_pathDiffWindow2", "h_Time_pathDiffWindow2; recHit Time [ns]; Events", 20000, -100.0, 100.0); h_Time_pathDiffWindow2->Sumw2();
+  TH1F *h_Time_pathDiffWindowUnweighted2 = new TH1F("h_Time_pathDiffWindowUnweighted2", "h_Time_pathDiffWindowUnweighted2; recHit Time [ns]; Events", 20000, -100.0, 100.0); h_Time_pathDiffWindowUnweighted2->Sumw2();
   TH1F *h_recHit_TimeThreshold = new TH1F("h_recHit_TimeThreshold", "h_recHit_TimeThreshold; recHit Time [ns]; Events", 20000, -100, 100.0); h_recHit_TimeThreshold->Sumw2();
   TH1F *h_recHit_energyOfHitsTime2 = new TH1F("h_recHit_energyOfHitsTime2", "Energy of hits with time > 2 [ns]; recHit Energy; Events", 1000, 0.0, 0.5); h_recHit_energyOfHitsTime2->Sumw2();
   TH1F *h_recHit_energyOfHitsTime1To2 = new TH1F("h_recHit_energyOfHitsTime1To2", "Energy of hits with time > 0 and time < 2 [ns]; recHit Energy; Events", 1000, 0.0, 0.5); h_recHit_energyOfHitsTime1To2->Sumw2();
@@ -124,7 +134,7 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
   TH2F *h_recHit_RawTimeVsrecHitE = new TH2F("h_recHit_RawTimeVsrecHitE", "Raw RecHit Time Versus Energy; Raw recHit Time [ns]; Energy", 200, -10.0, 10.0, 1000, 0.0, 0.5); h_recHit_RawTimeVsrecHitE->Sumw2();
   TH2F *h_recHitRatioVsE = new TH2F("h_recHitRatioVsE", "Ratio of Energy/Distance Versus Path Difference; Path Difference; Energy/Path Difference", 300, 300.0, 450.0, 5000, 0.0, 0.5); h_recHitRatioVsE->Sumw2(); 
   TH1F *h_recHit_Energy = new TH1F("h_recHit_Energy", "Reconstructed Hit Energy; Energy; Events", 1000, 0.0, 0.5); h_recHit_Energy->Sumw2();
-
+  TH2F *h_hist_fraction = new TH2F("h_hist_fraction", "Reconstructed Hit Energy; Energy; Fraction of hits", 1000, 0.0, 1.0, 1000, 0, 1); h_hist_fraction->Sumw2();
   int nEvents=tree->GetEntries();
   std::cout << "nEvents= " << nEvents << std::endl;
   TF1 *bs_x = new TF1("bs_x", "exp(-0.5*((x-0.243996)/0.00143119)**2)", -0.30, 0.30);
@@ -142,6 +152,10 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
     double sumOfHitEnergy = 0.0;
     double sumOfHitEnergyTimes = 0.0;
     double sumOfHitTimes = 0.0;
+    double sumOfHitEnergyTimesWindow1 = 0.0;
+    double sumOfHitEnergyTimesWindow2 = 0.0;
+    double sumOfHitEnergiesWindow1 = 0.0;
+    double sumOfHitEnergiesWindow2 = 0.0;
     double vertex_x_gtoy = bs_x->GetRandom();    
     double vertex_y_gtoy = bs_y->GetRandom();
     double vertex_z_gtoy = bs_z->GetRandom();
@@ -176,24 +190,44 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
       //if(recHit.recHitE> 0.01) 
       if(pathDifference > 335 and pathDifference < 345) h_Time_pathDiffWindow->Fill(recHit.recHitTime, recHit.recHitE);
       if(pathDifference > 335 and pathDifference < 345) h_Time_pathDiffWindowUnweighted->Fill(recHit.recHitTime); 
+      if(pathDifference > 350 and pathDifference < 360) h_Time_pathDiffWindow2->Fill(recHit.recHitTime, recHit.recHitE);
+      if(pathDifference > 350 and pathDifference < 360) h_Time_pathDiffWindowUnweighted2->Fill(recHit.recHitTime);
+      if(pathDifference > 335 and pathDifference < 345) sumOfHitEnergyTimesWindow1 += recHit.recHitTime*recHit.recHitE;
+      else if(pathDifference > 350 and pathDifference < 360) sumOfHitEnergyTimesWindow2 += recHit.recHitTime*recHit.recHitE;
+      if(pathDifference > 335 and pathDifference < 345) sumOfHitEnergiesWindow1 += recHit.recHitE;
+      else if(pathDifference > 350 and pathDifference < 360) sumOfHitEnergiesWindow2 += recHit.recHitE;
       recHits.push_back(recHit);
     }//end loop over hits
     
     if(sumOfHitTimes > 0.0 and recHits.size() > 0) h_recHit_Time_UnweightedAverage->Fill(sumOfHitTimes/recHits.size());
     if(sumOfHitEnergy > 0.0) h_recHit_TimeAverage->Fill(sumOfHitEnergyTimes/sumOfHitEnergy);
 
+    if(sumOfHitEnergiesWindow1 > 0.0) h_Time_AverageWindow1->Fill(sumOfHitEnergyTimesWindow1/sumOfHitEnergiesWindow1);
+    if(sumOfHitEnergiesWindow2 > 0.0) h_Time_AverageWindow2->Fill(sumOfHitEnergyTimesWindow2/sumOfHitEnergiesWindow2);
+
     std::sort(recHits.begin(), recHits.end(), sortRecHitsInDescendingE);
     TVector3 recHitV;
     recHitV.SetXYZ(-9999.0, -9999.0, -9999.0);
-    //erasing last 5% of entries in the vector of recHits
-    int removeElements = 0.05*recHits.size();
-    
+    //erasing last 95% of entries in the vector of recHits
+    //int removeElements = 0.95*recHits.size();
+    int removeElements = 0.0;
+    std::cout << "recHits.size() = " << recHits.size() << std::endl;    
+
     for(int i=0; i<removeElements; i++)
     {
       recHits.pop_back();
     }
     double sumOf95HitEnergyTimes = 0.0;
     double sumOf95HitEnergy = 0.0;
+    double sumOfHitEnergy50Percent = 0.0;
+    double sumOfEnergy = 0.0; 
+    int hitNumber = 0.0;
+    std::cout << "reduced recHits.size() = " << recHits.size() << std::endl;
+
+    for (unsigned int i=0; i<recHits.size(); i++)
+    {
+      sumOfEnergy += recHits.at(i).recHitE;
+    }
 
     for (unsigned int i=0; i<recHits.size(); i++) 
     { 
@@ -207,8 +241,19 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
       h_recHit_95Eta->Fill(recHitV.Eta());
       sumOf95HitEnergyTimes += recHits.at(i).recHitE*recHits.at(i).recHitTime;
       sumOf95HitEnergy += recHits.at(i).recHitE;
+      double criterion = 0.80*sumOfEnergy;
+      if(sameVal(criterion, sumOf95HitEnergy)) 
+      {
+        sumOfHitEnergy50Percent = sumOf95HitEnergy;
+        hitNumber = i;
+      }
     }
-    if(sumOf95HitEnergy > 0.0) h_recHit_95TimeAverage->Fill(sumOf95HitEnergyTimes/sumOf95HitEnergy);
+    h_hist_fraction->Fill(sumOfHitEnergy50Percent, ((double)hitNumber/(double)recHits.size())); 
+    //std::cout << "sumOfHitEnergy50Percent = " << sumOfHitEnergy50Percent <<  std::endl;
+    //std::cout << "sumOfEnergy = " << sumOfEnergy <<  std::endl;
+    //std::cout << "hitNumber/recHits.size() = " << ((double)hitNumber/(double)recHits.size()) << std::endl;
+
+    if(sumOf95HitEnergy > 0.0 and sumOf95HitEnergyTimes > 0.0) h_recHit_95TimeAverage->Fill(sumOf95HitEnergyTimes/sumOf95HitEnergy);
 
   }//end of event loop
 
@@ -241,6 +286,11 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
   h_recHit_95TimeAverage->Write();
   h_Time_pathDiffWindow->Write();
   h_Time_pathDiffWindowUnweighted->Write();
+  h_Time_pathDiffWindow2->Write();
+  h_Time_pathDiffWindowUnweighted2->Write();
+  h_Time_AverageWindow1->Write();
+  h_Time_AverageWindow2->Write();
+  h_hist_fraction->Write();
   tFile->Close();
   std::cout<<"Wrote output file "<<histfilename<<std::endl;
 
