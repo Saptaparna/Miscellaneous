@@ -55,7 +55,8 @@ std::string itoa(int i)
 
 bool sameVal(double a, double b)
 {
-    return fabs(a - b) < 3.000e-03;
+    //return fabs(a - b) < 3.000e-03;
+   return fabs(a - b) < 1.000e-06;
 }
 
 
@@ -106,6 +107,7 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
   TH1F *h_vertex_y=new TH1F("h_vertex_y", "h_vertex_y; Vertex [mm]; Events", 100, -50.0, 50.0); h_vertex_y->Sumw2();
   TH1F *h_vertex_z=new TH1F("h_vertex_z", "h_vertex_z; Vertex [mm]; Events", 100, -50.0, 50.0); h_vertex_z->Sumw2();
   TH1F *h_recHit_95HighestEnergy = new TH1F("h_recHit_95HighestEnergy", "h_recHit_95HighestEnergy; Energy; Entries", 5000, 0, 5.0); h_recHit_95HighestEnergy->Sumw2();
+  TH1F *h_recHit_HighestEnergy = new TH1F("h_recHit_HighestEnergy", "h_recHit_HighestEnergy; Energy; Events", 10000, 0, 10.0); h_recHit_HighestEnergy->Sumw2();
 
   TH1F *h_recHit_95X = new TH1F("h_recHit_95X", "h_recHit_95X; recHit x coordinate; Events", 200, -100, 100); h_recHit_95X->Sumw2();
   TH1F *h_recHit_95Y = new TH1F("h_recHit_95Y", "h_recHit_95Y; recHit y coordinate; Events", 200, -100, 100); h_recHit_95Y->Sumw2();
@@ -133,8 +135,8 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
   TH2F *h_recHit_TimeVsrecHitE = new TH2F("h_recHit_TimeVsrecHitE", "RecHit Time Versus Energy; Time [ns]; Energy", 100, 5, 15.0, 1000, 0.0, 0.5); h_recHit_TimeVsrecHitE->Sumw2();
   TH2F *h_recHit_RawTimeVsrecHitE = new TH2F("h_recHit_RawTimeVsrecHitE", "Raw RecHit Time Versus Energy; Raw recHit Time [ns]; Energy", 200, -10.0, 10.0, 1000, 0.0, 0.5); h_recHit_RawTimeVsrecHitE->Sumw2();
   TH2F *h_recHitRatioVsE = new TH2F("h_recHitRatioVsE", "Ratio of Energy/Distance Versus Path Difference; Path Difference; Energy/Path Difference", 300, 300.0, 450.0, 5000, 0.0, 0.5); h_recHitRatioVsE->Sumw2(); 
-  TH1F *h_recHit_Energy = new TH1F("h_recHit_Energy", "Reconstructed Hit Energy; Energy; Events", 1000, 0.0, 0.5); h_recHit_Energy->Sumw2();
-  TH2F *h_hist_fraction = new TH2F("h_hist_fraction", "Reconstructed Hit Energy; Energy; Fraction of hits", 1000, 0.0, 1.0, 1000, 0, 1); h_hist_fraction->Sumw2();
+  TH1F *h_recHit_Energy = new TH1F("h_recHit_Energy", "Reconstructed Hit Energy; Energy; Events", 1000, 0.0, 10.0); h_recHit_Energy->Sumw2();
+  TH2F *h_hist_fraction = new TH2F("h_hist_fraction", "Fraction of hits that contain 80% of the recHit energy in an event; Energy; Fraction of hits", 1000, 0.0, 10.0, 1000, 0, 1); h_hist_fraction->Sumw2();
   int nEvents=tree->GetEntries();
   std::cout << "nEvents= " << nEvents << std::endl;
   TF1 *bs_x = new TF1("bs_x", "exp(-0.5*((x-0.243996)/0.00143119)**2)", -0.30, 0.30);
@@ -213,13 +215,15 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
     int removeElements = 0.0;
     std::cout << "recHits.size() = " << recHits.size() << std::endl;    
 
+    if(recHits.size() > 0.0) h_recHit_HighestEnergy->Fill(recHits.at(0).recHitE);
+
     for(int i=0; i<removeElements; i++)
     {
       recHits.pop_back();
     }
     double sumOf95HitEnergyTimes = 0.0;
     double sumOf95HitEnergy = 0.0;
-    double sumOfHitEnergy50Percent = 0.0;
+    double sumOfHitEnergy80Percent = 0.0;
     double sumOfEnergy = 0.0; 
     int hitNumber = 0.0;
     std::cout << "reduced recHits.size() = " << recHits.size() << std::endl;
@@ -241,17 +245,15 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
       h_recHit_95Eta->Fill(recHitV.Eta());
       sumOf95HitEnergyTimes += recHits.at(i).recHitE*recHits.at(i).recHitTime;
       sumOf95HitEnergy += recHits.at(i).recHitE;
+      if(sameVal(recHits.at(i).recHitE,0.00138456)) std::cout << "recHits.at(i).recHitE = " << recHits.at(i).recHitE << std::endl;
       double criterion = 0.80*sumOfEnergy;
       if(sameVal(criterion, sumOf95HitEnergy)) 
       {
-        sumOfHitEnergy50Percent = sumOf95HitEnergy;
+        sumOfHitEnergy80Percent = sumOf95HitEnergy;
         hitNumber = i;
       }
     }
-    h_hist_fraction->Fill(sumOfHitEnergy50Percent, ((double)hitNumber/(double)recHits.size())); 
-    //std::cout << "sumOfHitEnergy50Percent = " << sumOfHitEnergy50Percent <<  std::endl;
-    //std::cout << "sumOfEnergy = " << sumOfEnergy <<  std::endl;
-    //std::cout << "hitNumber/recHits.size() = " << ((double)hitNumber/(double)recHits.size()) << std::endl;
+    h_hist_fraction->Fill(sumOfHitEnergy80Percent, ((double)hitNumber/(double)recHits.size())); 
 
     if(sumOf95HitEnergy > 0.0 and sumOf95HitEnergyTimes > 0.0) h_recHit_95TimeAverage->Fill(sumOf95HitEnergyTimes/sumOf95HitEnergy);
 
@@ -290,6 +292,7 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
   h_Time_pathDiffWindowUnweighted2->Write();
   h_Time_AverageWindow1->Write();
   h_Time_AverageWindow2->Write();
+  h_recHit_HighestEnergy->Write();
   h_hist_fraction->Write();
   tFile->Close();
   std::cout<<"Wrote output file "<<histfilename<<std::endl;
