@@ -60,7 +60,7 @@ bool sameVal(double a, double b)
 }
 
 
-int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
+int ReadHGCTiming_Tree_Jul8(std::string infile, std::string outfile)
 {
   std::string inputfilename=(infile+".root").c_str();
   TChain *tree=new TChain("hgctiming/HGCTiming");
@@ -103,21 +103,31 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
   tree->SetBranchAddress("GenVertex", &(GenVertex));
   tree->SetBranchAddress("uncRecHit_time", &(uncRecHit_time));
 
-  TH1F *h_TimeAverage_1 = new TH1F("h_TimeAverage_1", "h_TimeAverage_1; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_1->Sumw2();
-  TH1F *h_TimeAverage_2 = new TH1F("h_TimeAverage_2", "h_TimeAverage_2; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_2->Sumw2();
-  TH1F *h_TimeAverage_3 = new TH1F("h_TimeAverage_3", "h_TimeAverage_3; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_3->Sumw2();
-  TH1F *h_TimeAverage_4 = new TH1F("h_TimeAverage_4", "h_TimeAverage_4; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_4->Sumw2();
-  TH1F *h_TimeAverage_5 = new TH1F("h_TimeAverage_5", "h_TimeAverage_5; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_5->Sumw2();
-  TH1F *h_TimeAverage_6 = new TH1F("h_TimeAverage_6", "h_TimeAverage_6; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_6->Sumw2();
-  TH1F *h_TimeAverage_7 = new TH1F("h_TimeAverage_7", "h_TimeAverage_7; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_7->Sumw2();
-  TH1F *h_TimeAverage_8 = new TH1F("h_TimeAverage_8", "h_TimeAverage_8; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_8->Sumw2();
-  TH1F *h_TimeAverage_9 = new TH1F("h_TimeAverage_9", "h_TimeAverage_9; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_9->Sumw2();
-  TH1F *h_TimeAverage_10 = new TH1F("h_TimeAverage_10", "h_TimeAverage_10; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_10->Sumw2();
-  TH1F *h_TimeAverage_11 = new TH1F("h_TimeAverage_11", "h_TimeAverage_11; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_11->Sumw2();             
-  TH1F *h_TimeAverage_12 = new TH1F("h_TimeAverage_12", "h_TimeAverage_12; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_12->Sumw2();
-  TH1F *h_TimeAverage_13 = new TH1F("h_TimeAverage_13", "h_TimeAverage_13; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_13->Sumw2();
-  TH1F *h_TimeAverage_14 = new TH1F("h_TimeAverage_14", "h_TimeAverage_14; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_14->Sumw2();
-  
+  TH1F *h_TimeAverage_1 = new TH1F("h_TimeAverage_1", "h_TimeAverage_1; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_1->Sumw2();
+  TH1F *h_TimeAverage_2 = new TH1F("h_TimeAverage_2", "h_TimeAverage_2; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_2->Sumw2();
+  TH1F *h_TimeAverage_3 = new TH1F("h_TimeAverage_3", "h_TimeAverage_3; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_3->Sumw2();
+  TH1F *h_TimeAverage_4 = new TH1F("h_TimeAverage_4", "h_TimeAverage_4; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_4->Sumw2();
+  TH1F *h_TimeAverage_5 = new TH1F("h_TimeAverage_5", "h_TimeAverage_5; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_5->Sumw2();
+  TH1F *h_TimeAverage_6 = new TH1F("h_TimeAverage_6", "h_TimeAverage_6; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_6->Sumw2();
+  TH1F *h_TimeAverage_7 = new TH1F("h_TimeAverage_7", "h_TimeAverage_7; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_7->Sumw2();
+  TH1F *h_TimeAverage_8 = new TH1F("h_TimeAverage_8", "h_TimeAverage_8; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_8->Sumw2();
+  TH1F *h_TimeAverage_9 = new TH1F("h_TimeAverage_9", "h_TimeAverage_9; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_9->Sumw2();
+  TH1F *h_TimeAverage_10 = new TH1F("h_TimeAverage_10", "h_TimeAverage_10; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_10->Sumw2();
+  TH1F *h_TimeAverage_11 = new TH1F("h_TimeAverage_11", "h_TimeAverage_11; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_11->Sumw2();             
+  TH1F *h_TimeAverage_12 = new TH1F("h_TimeAverage_12", "h_TimeAverage_12; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_12->Sumw2();
+  TH1F *h_TimeAverage_13 = new TH1F("h_TimeAverage_13", "h_TimeAverage_13; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_13->Sumw2();
+  TH1F *h_TimeAverage_14 = new TH1F("h_TimeAverage_14", "h_TimeAverage_14; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_14->Sumw2();
+  TH1F *h_TimeAverage_15 = new TH1F("h_TimeAverage_15", "h_TimeAverage_15; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_15->Sumw2();
+  TH1F *h_TimeAverage_16 = new TH1F("h_TimeAverage_16", "h_TimeAverage_16; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_16->Sumw2();
+  TH1F *h_TimeAverage_17 = new TH1F("h_TimeAverage_17", "h_TimeAverage_17; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_17->Sumw2();
+  TH1F *h_TimeAverage_18 = new TH1F("h_TimeAverage_18", "h_TimeAverage_18; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_18->Sumw2();
+  TH1F *h_TimeAverage_19 = new TH1F("h_TimeAverage_19", "h_TimeAverage_19; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_19->Sumw2();
+  TH1F *h_TimeAverage_20 = new TH1F("h_TimeAverage_20", "h_TimeAverage_20; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_20->Sumw2();
+  TH1F *h_TimeAverage_21 = new TH1F("h_TimeAverage_21", "h_TimeAverage_21; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_21->Sumw2();
+  TH1F *h_TimeAverage_22 = new TH1F("h_TimeAverage_22", "h_TimeAverage_22; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_22->Sumw2();
+  TH1F *h_TimeAverage_23 = new TH1F("h_TimeAverage_23", "h_TimeAverage_23; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_23->Sumw2();
+  TH1F *h_TimeAverage_24 = new TH1F("h_TimeAverage_24", "h_TimeAverage_24; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_24->Sumw2(); 
+
   int nEvents=tree->GetEntries();
   std::cout << "nEvents= " << nEvents << std::endl;
   TF1 *bs_x = new TF1("bs_x", "exp(-0.5*((x-0.243996)/0.00143119)**2)", -0.30, 0.30);
@@ -135,8 +145,8 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
     double vertex_z_gtoy = bs_z->GetRandom();
     double sumOfHitEnergyRawTimes = 0.0;
     double sumOfHitEnergy = 0.0;
-    double sumOfHitEnergyTimesWindow[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    double sumOfHitEnergyWindow[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
+    double sumOfHitEnergyTimesWindow[24] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    double sumOfHitEnergyWindow[24] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
     for (unsigned int j=0; j<recHit_energy->size(); j++)
     {
       RecHitInfo recHit;
@@ -215,20 +225,70 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
       }
       else if(pathDifference > 375 and pathDifference < 380)
       {
-        recHit.recHitTime = recHit_time->at(j) + ((13.5699-12.5858)/(speedOfLight)) - 1.0; //difference of time between window 12 and window 13
+        recHit.recHitTime = recHit_time->at(j) + ((13.5699-12.5858)/(speedOfLight)) - 1.0; //difference of time between window 13 and window 14
         sumOfHitEnergyTimesWindow[11] += recHit.recHitTime*recHit.recHitE;
         sumOfHitEnergyWindow[11] += recHit.recHitE;
       }
       else if(pathDifference > 380 and pathDifference < 385)
       {
-        recHit.recHitTime = recHit_time->at(j) + ((13.591-13.5699)/(speedOfLight)) - 1.0; //difference of time between window 13 and window 14
+        recHit.recHitTime = recHit_time->at(j) + ((13.5699-12.5858)/(speedOfLight)) - 1.0; //difference of time between window 12 and window 13
         sumOfHitEnergyTimesWindow[12] += recHit.recHitTime*recHit.recHitE;
         sumOfHitEnergyWindow[12] += recHit.recHitE;
       }
-      else if(pathDifference > 385 and pathDifference < 440)
+      else if(pathDifference > 385 and pathDifference < 390)
       {
         sumOfHitEnergyTimesWindow[13] += recHit.recHitTime*recHit.recHitE;
         sumOfHitEnergyWindow[13] += recHit.recHitE;
+      }
+      else if(pathDifference > 390 and pathDifference < 395)
+      {
+        sumOfHitEnergyTimesWindow[14] += recHit.recHitTime*recHit.recHitE;
+        sumOfHitEnergyWindow[14] += recHit.recHitE;
+      }
+      else if(pathDifference > 395 and pathDifference < 400)
+      {
+        sumOfHitEnergyTimesWindow[15] += recHit.recHitTime*recHit.recHitE;
+        sumOfHitEnergyWindow[15] += recHit.recHitE;
+      }
+      else if(pathDifference > 400 and pathDifference < 405)
+      {
+        sumOfHitEnergyTimesWindow[16] += recHit.recHitTime*recHit.recHitE;
+        sumOfHitEnergyWindow[16] += recHit.recHitE;
+      }
+      else if(pathDifference > 405 and pathDifference < 410)
+      {
+        sumOfHitEnergyTimesWindow[17] += recHit.recHitTime*recHit.recHitE;
+        sumOfHitEnergyWindow[17] += recHit.recHitE;
+      }
+      else if(pathDifference > 410 and pathDifference < 415)
+      {
+        sumOfHitEnergyTimesWindow[18] += recHit.recHitTime*recHit.recHitE;
+        sumOfHitEnergyWindow[18] += recHit.recHitE;
+      }
+      else if(pathDifference > 415 and pathDifference < 420)
+      {
+        sumOfHitEnergyTimesWindow[19] += recHit.recHitTime*recHit.recHitE;
+        sumOfHitEnergyWindow[19] += recHit.recHitE;
+      }
+      else if(pathDifference > 420 and pathDifference < 425)
+      {
+        sumOfHitEnergyTimesWindow[20] += recHit.recHitTime*recHit.recHitE;
+        sumOfHitEnergyWindow[20] += recHit.recHitE;
+      }
+      else if(pathDifference > 425 and pathDifference < 430)
+      {
+        sumOfHitEnergyTimesWindow[21] += recHit.recHitTime*recHit.recHitE;
+        sumOfHitEnergyWindow[21] += recHit.recHitE;
+      }
+      else if(pathDifference > 430 and pathDifference < 435)
+      {
+        sumOfHitEnergyTimesWindow[22] += recHit.recHitTime*recHit.recHitE;
+        sumOfHitEnergyWindow[22] += recHit.recHitE;
+      }
+      else if(pathDifference > 435 and pathDifference < 440)
+      {
+        sumOfHitEnergyTimesWindow[23] += recHit.recHitTime*recHit.recHitE;
+        sumOfHitEnergyWindow[23] += recHit.recHitE;
       }
       recHits.push_back(recHit);
     }//end loop over hits
@@ -251,6 +311,17 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
     if(sumOfHitEnergyWindow[11] > 0.0) h_TimeAverage_12->Fill(sumOfHitEnergyTimesWindow[11]/sumOfHitEnergyWindow[11]);
     if(sumOfHitEnergyWindow[12] > 0.0) h_TimeAverage_13->Fill(sumOfHitEnergyTimesWindow[12]/sumOfHitEnergyWindow[12]);
     if(sumOfHitEnergyWindow[13] > 0.0) h_TimeAverage_14->Fill(sumOfHitEnergyTimesWindow[13]/sumOfHitEnergyWindow[13]);
+    if(sumOfHitEnergyWindow[14] > 0.0) h_TimeAverage_15->Fill(sumOfHitEnergyTimesWindow[14]/sumOfHitEnergyWindow[14]);
+    if(sumOfHitEnergyWindow[15] > 0.0) h_TimeAverage_16->Fill(sumOfHitEnergyTimesWindow[15]/sumOfHitEnergyWindow[15]);
+    if(sumOfHitEnergyWindow[16] > 0.0) h_TimeAverage_17->Fill(sumOfHitEnergyTimesWindow[16]/sumOfHitEnergyWindow[16]);
+    if(sumOfHitEnergyWindow[17] > 0.0) h_TimeAverage_18->Fill(sumOfHitEnergyTimesWindow[17]/sumOfHitEnergyWindow[17]);
+    if(sumOfHitEnergyWindow[18] > 0.0) h_TimeAverage_19->Fill(sumOfHitEnergyTimesWindow[18]/sumOfHitEnergyWindow[18]);
+    if(sumOfHitEnergyWindow[19] > 0.0) h_TimeAverage_20->Fill(sumOfHitEnergyTimesWindow[19]/sumOfHitEnergyWindow[19]);
+    if(sumOfHitEnergyWindow[20] > 0.0) h_TimeAverage_21->Fill(sumOfHitEnergyTimesWindow[20]/sumOfHitEnergyWindow[20]);
+    if(sumOfHitEnergyWindow[21] > 0.0) h_TimeAverage_22->Fill(sumOfHitEnergyTimesWindow[21]/sumOfHitEnergyWindow[21]);
+    if(sumOfHitEnergyWindow[22] > 0.0) h_TimeAverage_23->Fill(sumOfHitEnergyTimesWindow[22]/sumOfHitEnergyWindow[22]);
+    if(sumOfHitEnergyWindow[23] > 0.0) h_TimeAverage_24->Fill(sumOfHitEnergyTimesWindow[23]/sumOfHitEnergyWindow[23]);
+
   
   }//end of event loop
 
@@ -270,6 +341,16 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
   h_TimeAverage_12->Write();
   h_TimeAverage_13->Write();
   h_TimeAverage_14->Write();
+  h_TimeAverage_15->Write();
+  h_TimeAverage_16->Write();
+  h_TimeAverage_17->Write();
+  h_TimeAverage_18->Write();
+  h_TimeAverage_19->Write();
+  h_TimeAverage_20->Write();
+  h_TimeAverage_21->Write();
+  h_TimeAverage_22->Write();
+  h_TimeAverage_23->Write();
+  h_TimeAverage_24->Write();
   tFile->Close();
   std::cout<<"Wrote output file "<<histfilename<<std::endl;
   return 0; 
