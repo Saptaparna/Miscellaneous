@@ -103,20 +103,20 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
   tree->SetBranchAddress("GenVertex", &(GenVertex));
   tree->SetBranchAddress("uncRecHit_time", &(uncRecHit_time));
 
-  TH1F *h_TimeAverage_1 = new TH1F("h_TimeAverage_1", "h_TimeAverage_1; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_1->Sumw2();
-  TH1F *h_TimeAverage_2 = new TH1F("h_TimeAverage_2", "h_TimeAverage_2; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_2->Sumw2();
-  TH1F *h_TimeAverage_3 = new TH1F("h_TimeAverage_3", "h_TimeAverage_3; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_3->Sumw2();
-  TH1F *h_TimeAverage_4 = new TH1F("h_TimeAverage_4", "h_TimeAverage_4; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_4->Sumw2();
-  TH1F *h_TimeAverage_5 = new TH1F("h_TimeAverage_5", "h_TimeAverage_5; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_5->Sumw2();
-  TH1F *h_TimeAverage_6 = new TH1F("h_TimeAverage_6", "h_TimeAverage_6; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_6->Sumw2();
-  TH1F *h_TimeAverage_7 = new TH1F("h_TimeAverage_7", "h_TimeAverage_7; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_7->Sumw2();
-  TH1F *h_TimeAverage_8 = new TH1F("h_TimeAverage_8", "h_TimeAverage_8; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_8->Sumw2();
-  TH1F *h_TimeAverage_9 = new TH1F("h_TimeAverage_9", "h_TimeAverage_9; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_9->Sumw2();
-  TH1F *h_TimeAverage_10 = new TH1F("h_TimeAverage_10", "h_TimeAverage_10; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_10->Sumw2();
-  TH1F *h_TimeAverage_11 = new TH1F("h_TimeAverage_11", "h_TimeAverage_11; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_11->Sumw2();             
-  TH1F *h_TimeAverage_12 = new TH1F("h_TimeAverage_12", "h_TimeAverage_12; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_12->Sumw2();
-  TH1F *h_TimeAverage_13 = new TH1F("h_TimeAverage_13", "h_TimeAverage_13; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_13->Sumw2();
-  TH1F *h_TimeAverage_14 = new TH1F("h_TimeAverage_14", "h_TimeAverage_14; Average Time [ns]; Events", 200, -10.0, 10.0); h_TimeAverage_14->Sumw2();
+  TH1F *h_TimeAverage_1 = new TH1F("h_TimeAverage_1", "h_TimeAverage_1; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_1->Sumw2();
+  TH1F *h_TimeAverage_2 = new TH1F("h_TimeAverage_2", "h_TimeAverage_2; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_2->Sumw2();
+  TH1F *h_TimeAverage_3 = new TH1F("h_TimeAverage_3", "h_TimeAverage_3; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_3->Sumw2();
+  TH1F *h_TimeAverage_4 = new TH1F("h_TimeAverage_4", "h_TimeAverage_4; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_4->Sumw2();
+  TH1F *h_TimeAverage_5 = new TH1F("h_TimeAverage_5", "h_TimeAverage_5; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_5->Sumw2();
+  TH1F *h_TimeAverage_6 = new TH1F("h_TimeAverage_6", "h_TimeAverage_6; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_6->Sumw2();
+  TH1F *h_TimeAverage_7 = new TH1F("h_TimeAverage_7", "h_TimeAverage_7; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_7->Sumw2();
+  TH1F *h_TimeAverage_8 = new TH1F("h_TimeAverage_8", "h_TimeAverage_8; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_8->Sumw2();
+  TH1F *h_TimeAverage_9 = new TH1F("h_TimeAverage_9", "h_TimeAverage_9; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_9->Sumw2();
+  TH1F *h_TimeAverage_10 = new TH1F("h_TimeAverage_10", "h_TimeAverage_10; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_10->Sumw2();
+  TH1F *h_TimeAverage_11 = new TH1F("h_TimeAverage_11", "h_TimeAverage_11; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_11->Sumw2();             
+  TH1F *h_TimeAverage_12 = new TH1F("h_TimeAverage_12", "h_TimeAverage_12; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_12->Sumw2();
+  TH1F *h_TimeAverage_13 = new TH1F("h_TimeAverage_13", "h_TimeAverage_13; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_13->Sumw2();
+  TH1F *h_TimeAverage_14 = new TH1F("h_TimeAverage_14", "h_TimeAverage_14; Average Time [ns]; Events", 200, 0.0, 20.0); h_TimeAverage_14->Sumw2();
   
   int nEvents=tree->GetEntries();
   std::cout << "nEvents= " << nEvents << std::endl;
@@ -146,86 +146,88 @@ int ReadHGCTiming_Tree_Jun3(std::string infile, std::string outfile)
       recHit.recHitZ = recHit_z->at(j); 
       double speedOfLight = 29.9792458;
       double pathDifference = (sqrt(recHit_x->at(j)*recHit_x->at(j) + recHit_y->at(j)*recHit_y->at(j) + (recHit_z->at(j))*(recHit_z->at(j))));
+      //recHit.recHitTime = recHit_time->at(j) + (pathDifference/(speedOfLight)) - 1.0;
       if(pathDifference > 320 and pathDifference < 325) 
       {
-        recHit.recHitTime = recHit_time->at(j) + ((10.9798-10.8251)/(speedOfLight)) - 1.0; //difference of time between window 1 and window 2
+        recHit.recHitTime = recHit_time->at(j) + (pathDifference/(speedOfLight)) - 1.0; //difference of time between window 1 and window 2
         sumOfHitEnergyTimesWindow[0] += recHit.recHitTime*recHit.recHitE;
         sumOfHitEnergyWindow[0] += recHit.recHitE;
       }
       else if(pathDifference > 325 and pathDifference < 330)
       {  
-        recHit.recHitTime = recHit_time->at(j) + ((11.136-10.9798)/(speedOfLight)) - 1.0; //difference of time between window 2 and window 3
+        recHit.recHitTime = recHit_time->at(j) + ((10.9784-10.8335)/(speedOfLight)) - 1.0 + 10.8335; //difference of time between window 1 and window 2
         sumOfHitEnergyTimesWindow[1] += recHit.recHitTime*recHit.recHitE;
         sumOfHitEnergyWindow[1] += recHit.recHitE;
       }
       else if(pathDifference > 330 and pathDifference < 335)
       {
-        recHit.recHitTime = recHit_time->at(j) + ((11.2856-11.136)/(speedOfLight)) - 1.0; //difference of time between window 3 and window 4
+        recHit.recHitTime = recHit_time->at(j) + ((11.1278-10.9784)/(speedOfLight)) - 1.0 + 10.8335; //difference of time between window 2 and window 3
         sumOfHitEnergyTimesWindow[2] += recHit.recHitTime*recHit.recHitE;
         sumOfHitEnergyWindow[2] += recHit.recHitE;
       }
       else if(pathDifference > 335 and pathDifference < 340)
       {
-        recHit.recHitTime = recHit_time->at(j) + ((11.4432-11.2856)/(speedOfLight)) - 1.0; //difference of time between window 4 and window 5
+        recHit.recHitTime = recHit_time->at(j) + ((11.3025-11.1278)/(speedOfLight)) - 1.0 + 10.8335; //difference of time between window 3 and window 4
         sumOfHitEnergyTimesWindow[3] += recHit.recHitTime*recHit.recHitE;
         sumOfHitEnergyWindow[3] += recHit.recHitE;
       }
       else if(pathDifference > 340 and pathDifference < 345)
       {
-        recHit.recHitTime = recHit_time->at(j) + ((11.6065-11.4432)/(speedOfLight)) - 1.0; //difference of time between window 5 and window 6
+        recHit.recHitTime = recHit_time->at(j) + ((11.4645-11.3025)/(speedOfLight)) - 1.0 + 10.8335; //difference of time between window 4 and window 5
         sumOfHitEnergyTimesWindow[4] += recHit.recHitTime*recHit.recHitE;
         sumOfHitEnergyWindow[4] += recHit.recHitE;
       }
       else if(pathDifference > 345 and pathDifference < 350)
       {
-        recHit.recHitTime = recHit_time->at(j) + ((11.7761-11.6065)/(speedOfLight)) - 1.0; //difference of time between window 6 and window 7
+        recHit.recHitTime = recHit_time->at(j) + ((11.6201-11.4645)/(speedOfLight)) - 1.0 + 10.8335; //difference of time between window 5 and window 6
         sumOfHitEnergyTimesWindow[5] += recHit.recHitTime*recHit.recHitE;
         sumOfHitEnergyWindow[5] += recHit.recHitE;
       }
       else if(pathDifference > 350 and pathDifference < 355)
       {  
-        recHit.recHitTime = recHit_time->at(j) + ((11.9335-11.7761)/(speedOfLight)) - 1.0; //difference of time between window 7 and window 8
+        recHit.recHitTime = recHit_time->at(j) + ((11.7711-11.6201)/(speedOfLight)) - 1.0 + 10.8335; //difference of time between window 6 and window 7
         sumOfHitEnergyTimesWindow[6] += recHit.recHitTime*recHit.recHitE;
         sumOfHitEnergyWindow[6] += recHit.recHitE;
       }
       else if(pathDifference > 355 and pathDifference < 360)
       {
-        recHit.recHitTime = recHit_time->at(j) + ((12.098-11.9335)/(speedOfLight)) - 1.0; //difference of time between window 8 and window 9
+        recHit.recHitTime = recHit_time->at(j) + ((11.9373-11.7711)/(speedOfLight)) - 1.0 + 10.8335; //difference of time between window 7 and window 8
         sumOfHitEnergyTimesWindow[7] += recHit.recHitTime*recHit.recHitE;
         sumOfHitEnergyWindow[7] += recHit.recHitE;
       }
       else if(pathDifference > 360 and pathDifference < 365)
       {
-        recHit.recHitTime = recHit_time->at(j) + ((12.2761-12.098)/(speedOfLight)) - 1.0; //difference of time between window 9 and window 10
+        recHit.recHitTime = recHit_time->at(j) + ((12.1072-11.9373)/(speedOfLight)) - 1.0 + 10.8335; //difference of time between window 8 and window 9
         sumOfHitEnergyTimesWindow[8] += recHit.recHitTime*recHit.recHitE;
         sumOfHitEnergyWindow[8] += recHit.recHitE;
       }
       else if(pathDifference > 365 and pathDifference < 370)
       {
-        recHit.recHitTime = recHit_time->at(j) + ((12.392-12.2761)/(speedOfLight)) - 1.0; //difference of time between window 10 and window 11
+        recHit.recHitTime = recHit_time->at(j) + ((12.2807-12.1072)/(speedOfLight)) - 1.0 + 10.8335; //difference of time between window 9 and window 10
         sumOfHitEnergyTimesWindow[9] += recHit.recHitTime*recHit.recHitE;
         sumOfHitEnergyWindow[9] += recHit.recHitE;
       }
       else if(pathDifference > 370 and pathDifference < 375)
       {
-        recHit.recHitTime = recHit_time->at(j) + ((12.5858-12.392)/(speedOfLight)) - 1.0; //difference of time between window 11 and window 12
+        recHit.recHitTime = recHit_time->at(j) + ((12.4312-12.2807)/(speedOfLight)) - 1.0 + 10.8335; //difference of time between window 10 and window 11
         sumOfHitEnergyTimesWindow[10] += recHit.recHitTime*recHit.recHitE;
         sumOfHitEnergyWindow[10] += recHit.recHitE;
       }
       else if(pathDifference > 375 and pathDifference < 380)
       {
-        recHit.recHitTime = recHit_time->at(j) + ((13.5699-12.5858)/(speedOfLight)) - 1.0; //difference of time between window 12 and window 13
+        recHit.recHitTime = recHit_time->at(j) + ((12.6056-12.4312)/(speedOfLight)) - 1.0 + 10.8335; //difference of time between window 11 and window 12
         sumOfHitEnergyTimesWindow[11] += recHit.recHitTime*recHit.recHitE;
         sumOfHitEnergyWindow[11] += recHit.recHitE;
       }
       else if(pathDifference > 380 and pathDifference < 385)
       {
-        recHit.recHitTime = recHit_time->at(j) + ((13.591-13.5699)/(speedOfLight)) - 1.0; //difference of time between window 13 and window 14
+        recHit.recHitTime = recHit_time->at(j) + ((12.8135-12.6056)/(speedOfLight)) - 1.0 + 10.8335; //difference of time between window 12 and window 13
         sumOfHitEnergyTimesWindow[12] += recHit.recHitTime*recHit.recHitE;
         sumOfHitEnergyWindow[12] += recHit.recHitE;
       }
       else if(pathDifference > 385 and pathDifference < 440)
       {
+        recHit.recHitTime = recHit_time->at(j) + ((13.0518-12.8135)/(speedOfLight)) - 1.0 + 10.8335; //difference of time between window 13 and window 14
         sumOfHitEnergyTimesWindow[13] += recHit.recHitTime*recHit.recHitE;
         sumOfHitEnergyWindow[13] += recHit.recHitE;
       }

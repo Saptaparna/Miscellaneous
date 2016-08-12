@@ -385,6 +385,7 @@ int makeFitsOfHits_500GeV(std::string infile)
     h8->GetXaxis()->SetRangeUser(9, 14);
     h8->SetLineColor(kBlack);
     h8->SetLineWidth(2);
+    fa1->SetParLimits(0, 375, 400);
     h8->Fit("fa1");
     mean[7] = fa1->GetParameter(1);
     mean_error[7] = fa1->GetParameter(2)/TMath::Sqrt(h8->Integral());
@@ -400,6 +401,7 @@ int makeFitsOfHits_500GeV(std::string infile)
     h9->GetXaxis()->SetRangeUser(9, 14);
     h9->SetLineColor(kBlack);
     h9->SetLineWidth(2);
+    fa1->SetParLimits(0, 300, 325);
     h9->Fit("fa1");
     mean[8] = fa1->GetParameter(1);
     mean_error[8] = fa1->GetParameter(2)/TMath::Sqrt(h9->Integral());
@@ -415,6 +417,7 @@ int makeFitsOfHits_500GeV(std::string infile)
     h10->GetXaxis()->SetRangeUser(9, 14);
     h10->SetLineColor(kBlack);
     h10->SetLineWidth(2);
+    fa1->SetParLimits(0, 200, 210);
     h10->Fit("fa1");
     mean[9] = fa1->GetParameter(1);
     mean_error[9] = fa1->GetParameter(2)/TMath::Sqrt(h10->Integral());
@@ -430,6 +433,7 @@ int makeFitsOfHits_500GeV(std::string infile)
     h11->GetXaxis()->SetRangeUser(9, 14);
     h11->SetLineColor(kBlack);
     h11->SetLineWidth(2);
+    fa1->SetParLimits(0, 130, 150);
     h11->Fit("fa1");
     mean[10] = fa1->GetParameter(1);
     mean_error[10] = fa1->GetParameter(2)/TMath::Sqrt(h11->Integral());
@@ -445,6 +449,7 @@ int makeFitsOfHits_500GeV(std::string infile)
     h12->GetXaxis()->SetRangeUser(9, 14);
     h12->SetLineColor(kBlack);
     h12->SetLineWidth(2);
+    fa1->SetParLimits(0, 87, 100);
     h12->Fit("fa1");
     mean[11] = fa1->GetParameter(1);
     mean_error[11] = fa1->GetParameter(2)/TMath::Sqrt(h12->Integral());
@@ -460,6 +465,7 @@ int makeFitsOfHits_500GeV(std::string infile)
     h13->GetXaxis()->SetRangeUser(9, 14);
     h13->SetLineColor(kBlack);
     h13->SetLineWidth(2);
+    fa1->SetParLimits(0, 38, 40);
     h13->Fit("fa1");
     mean[12] = fa1->GetParameter(1);
     mean_error[12] = fa1->GetParameter(2)/TMath::Sqrt(h13->Integral());
@@ -473,7 +479,7 @@ int makeFitsOfHits_500GeV(std::string infile)
     
     TH1F *h14 = (TH1F*)file1->Get("h_TimeAverage_14");
     h14->Rebin(5);
-    h12->SetMaximum(30);
+    //h14->SetMaximum(30);
     h14->SetLineColor(kBlack);
     h14->SetLineWidth(2);
     h14->GetXaxis()->SetRangeUser(9, 14);
