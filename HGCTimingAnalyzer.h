@@ -60,7 +60,7 @@
 #include "SimDataFormats/TrackingHit/interface/PSimHit.h"
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
 #include "DataFormats/HGCRecHit/interface/HGCRecHitCollections.h"
-
+#include "DataFormats/HGCDigi/interface/HGCDigiCollections.h"
 #include "DataFormats/ForwardDetId/interface/HGCEEDetId.h"
 #include "DataFormats/ForwardDetId/interface/HGCHEDetId.h"
 #include "DataFormats/ForwardDetId/interface/HGCalDetId.h"
@@ -81,6 +81,10 @@
 #include <iterator>
 #include <iostream>
 
+#include "L1Trigger/L1THGCal/interface/HGCalTriggerGeometryBase.h"
+#include "L1Trigger/L1THGCal/interface/HGCalTriggerFECodecBase.h"
+#include "L1Trigger/L1THGCal/interface/HGCalTriggerBackendProcessor.h"
+
 //
 // class declaration
 //
@@ -90,6 +94,15 @@
 // from  edm::one::EDAnalyzer<> and also remove the line from
 // constructor "usesResource("TFileService");"
 // This will improve performance in multithreaded jobs.
+
+namespace 
+{  
+  template<typename T>
+  struct array_deleter
+  {
+    void operator () (T* arr) { delete [] arr; }
+  };
+}
 
 class HGCTimingAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
    public:
@@ -103,7 +116,7 @@ class HGCTimingAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       virtual void beginJob() override;
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
-
+      void setTreeCellSize(const size_t);
       // ----------member data ---------------------------
       Int_t run_,event_,lumi_,vertex_nTracks;
       Float_t vertex_x, vertex_y, vertex_z, vertex_pt, vertex_nChi2;
@@ -127,6 +140,24 @@ class HGCTimingAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       edm::EDGetTokenT<edm::SortedCollection<HGCUncalibratedRecHit> > srcUncalibratedRecHitEE_; 
       edm::EDGetTokenT<edm::SortedCollection<HGCUncalibratedRecHit> > srcUncalibratedRecHitHEB_;
       edm::EDGetTokenT<edm::SortedCollection<HGCUncalibratedRecHit> > srcUncalibratedRecHitHEF_;
+      edm::EDGetToken srcDigiee_, srcDigifh_, srcDigibh_;
+      HGCalTriggerGeometryBase::es_info es_info_;
+      std::unique_ptr<HGCalTriggerGeometryBase> triggerGeometry_;
+      int cellN_;
+      std::shared_ptr<int> cellId_;
+      std::shared_ptr<int> cellSubdet_;
+      std::shared_ptr<int> cellSide_;
+      std::shared_ptr<int> cellLayer_;
+      std::shared_ptr<int> cellWafer_;
+      std::shared_ptr<int> cellWaferType_;
+      std::shared_ptr<int> cellCell_;
+      std::shared_ptr<int> cellModuleId_;
+      std::shared_ptr<int> cellTriggerCellId_;
+      std::shared_ptr<uint32_t> cellDigi_;
+      std::shared_ptr<float>    cellX_;
+      std::shared_ptr<float>    cellY_;
+      std::shared_ptr<float>    cellZ_; 
+      std::shared_ptr<float>    cellEta_;
       };
       //
       // //
