@@ -81,11 +81,9 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
    edm::ESHandle<HGCalGeometry> geoHandle;
    iSetup.get<IdealGeometryRecord>().get("HGCalEESensitive",geoHandle);
-   const HGCalGeometry& hgcGeo = *geoHandle; 
 
    for(unsigned int l=0; l<simCluster->size(); l++) // Iterating over sim clusters
    {
-     //std::cout << "simCluster->at(l).numberOfRecHits() = " << simCluster->at(l).numberOfRecHits() <<std::endl; 
      for (int ih=0;ih<simCluster->at(l).numberOfRecHits();++ih)
      {
        uint32_t id = simCluster->at(l).hits_and_fractions().at(ih).first;
@@ -93,9 +91,7 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
        while (i_pfRecHit<pfRecHit->size() && pfRecHit->at(i_pfRecHit).detId()!=id) ++i_pfRecHit;
        if (i_pfRecHit!=pfRecHit->size()) // this means we have matched a PFRecHit to the sim
        {
-         uint32_t recHitId =  pfRecHit->at(i_pfRecHit).detId(); 
-         const FlatTrd *thisCell = static_cast<const FlatTrd*>(hgcGeo.getGeometry(recHitId));
-         const GlobalPoint& center = geoHandle->getPosition(recHitId); 
+         const GlobalPoint& center = geoHandle->getPosition(id); 
          if(pfRecHit->at(i_pfRecHit).time() > 0) 
          {
            recHit_time.push_back(pfRecHit->at(i_pfRecHit).time());
