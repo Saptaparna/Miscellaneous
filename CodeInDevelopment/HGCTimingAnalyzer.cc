@@ -95,12 +95,14 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
        {
          uint32_t recHitId =  pfRecHit->at(i_pfRecHit).detId(); 
          const FlatTrd *thisCell = static_cast<const FlatTrd*>(hgcGeo.getGeometry(recHitId));
-         reco::PFRecHit rh(thisCell, recHitId, pfRecHit->at(i_pfRecHit).layer(), pfRecHit->at(i_pfRecHit).energy()); 
+         const GlobalPoint& center = geoHandle->getPosition(recHitId); 
          if(pfRecHit->at(i_pfRecHit).time() > 0) 
          {
            recHit_time.push_back(pfRecHit->at(i_pfRecHit).time());
            recHit_energy.push_back(pfRecHit->at(i_pfRecHit).energy());
-           double recHitx = rh.position().x();
+           recHit_x.push_back(center.x());
+           recHit_y.push_back(center.y());
+           recHit_z.push_back(center.z());
          }
        }
      }
@@ -254,13 +256,10 @@ HGCTimingAnalyzer::beginJob()
   branch_=tree_->Branch("vertex_y", &vertex_y, "vertex_y/F");
   branch_=tree_->Branch("vertex_z", &vertex_z, "vertex_z/F");
   branch_=tree_->Branch("recHit_energy", &recHit_energy);
-  /*branch_=tree_->Branch("recHit_x", &recHit_x);
+  branch_=tree_->Branch("recHit_x", &recHit_x);
   branch_=tree_->Branch("recHit_y", &recHit_y);
-  branch_=tree_->Branch("recHit_z", &recHit_z);*/
+  branch_=tree_->Branch("recHit_z", &recHit_z);
   branch_=tree_->Branch("recHit_time", &recHit_time);
-  /*branch_=tree_->Branch("uncRecHit_time", &uncRecHit_time);
-  branch_=tree_->Branch("GenVertex", "TLorentzVector", &genVertex_);
-*/
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
