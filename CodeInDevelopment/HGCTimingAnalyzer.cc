@@ -12,13 +12,11 @@ HGCTimingAnalyzer::HGCTimingAnalyzer(const edm::ParameterSet& iConfig)
     srcSimVertices_ (consumes<std::vector<SimVertex> >(iConfig.getParameter<edm::InputTag> ("srcSimVertices"))),
     srcPFRecHit_ (consumes<std::vector<reco::PFRecHit> >(iConfig.getParameter<edm::InputTag> ("srcPFRecHit"))),
     srcSimCluster_ (consumes<std::vector<SimCluster> >(iConfig.getParameter<edm::InputTag> ("srcSimCluster")))
-    //srcDigiee_ (consumes<HGCEEDigiCollection>(iConfig.getParameter<edm::InputTag>("srcDigiee"))),
-    //srcDigifh_ (consumes<HGCHEDigiCollection>(iConfig.getParameter<edm::InputTag>("srcDigifh"))),
-    //srcDigibh_ (consumes<HGCHEDigiCollection>(iConfig.getParameter<edm::InputTag>("srcDigibh")))
 {
    usesResource("TFileService");
    const edm::ParameterSet& geometryConfig = iConfig.getParameterSet("TriggerGeometry");
    const std::string& trigGeomName = geometryConfig.getParameter<std::string>("TriggerGeometryName");
+   //principal_ =  new TPrincipal(3,"D");
 }
 
 
@@ -31,6 +29,7 @@ void
 HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
+   TPrincipal *principal_ =  new TPrincipal(3,"D");
    run_   = iEvent.id().run();
    event_ = iEvent.id().event();
    lumi_  = iEvent.luminosityBlock();
@@ -46,8 +45,10 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    recHit_z.clear();
    recHit_energy.clear();
    recHit_time.clear();
-   recHit_recoDetId.clear();   
-   uncRecHit_time.clear();
+   recHit_layer.clear();
+   v_isIn3x3.clear();
+   v_isIn5x5.clear();
+   v_isIn7x7.clear();
 
    edm::Handle<std::vector<SimTrack> > simTk;
    iEvent.getByToken(srcSimTracks_, simTk);
@@ -60,7 +61,7 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    {
      double pt = simTk->at(j).momentum().pt();
      if(pt < 2.0) continue;
-     double eta = simTk->at(j).momentum().eta();
+     //double eta = simTk->at(j).momentum().eta();
      if (simTk->at(j).noVertex()) continue;
      int vertIndex = simTk->at(j).vertIndex();
      vertex_x = simVtx->at(vertIndex).position().x();
@@ -71,8 +72,8 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    for(size_t i = 0; i < genParticles->size(); ++ i)
    {
      const reco::GenParticle & p = dynamic_cast<const reco::GenParticle &>((*genParticles)[i]);
-   }
-   */ 
+   }*/
+    
    edm::Handle<std::vector<reco::PFRecHit> > pfRecHit;
    iEvent.getByToken(srcPFRecHit_, pfRecHit);
    
@@ -96,6 +97,7 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
          {
            recHit_time.push_back(pfRecHit->at(i_pfRecHit).time());
            recHit_energy.push_back(pfRecHit->at(i_pfRecHit).energy());
+           recHit_layer.push_back(pfRecHit->at(i_pfRecHit).layer());
            recHit_x.push_back(center.x());
            recHit_y.push_back(center.y());
            recHit_z.push_back(center.z());
@@ -103,107 +105,65 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
        }
      }
    }
-   //edm::Handle<HGCRecHitCollection> recHitHandle;
-   //iEvent.getByToken(recHitToken_,recHitHandle);
-   //const HGCRecHitCollection& rechits = *recHitHandle;
-    
-
-  //code from Jean-Baptiste
- /* 
-  iSetup.get<IdealGeometryRecord>().get("HGCalEESensitive",es_info_.geom_ee);
-  iSetup.get<IdealGeometryRecord>().get("HGCalHESiliconSensitive",es_info_.geom_fh);
-  iSetup.get<IdealGeometryRecord>().get("HGCalHEScintillatorSensitive",es_info_.geom_bh);
-  iSetup.get<IdealGeometryRecord>().get("HGCalEESensitive",es_info_.topo_ee);
-  iSetup.get<IdealGeometryRecord>().get("HGCalHESiliconSensitive",es_info_.topo_fh);
-  iSetup.get<IdealGeometryRecord>().get("HGCalHEScintillatorSensitive",es_info_.topo_bh);
-
-  edm::Handle<HGCEEDigiCollection> ee_digis_h;
-  edm::Handle<HGCHEDigiCollection> fh_digis_h;
-
-  iEvent.getByToken(srcDigiee_,ee_digis_h);
-  iEvent.getByToken(srcDigifh_,fh_digis_h);
-
-  const HGCEEDigiCollection& ee_digis = *ee_digis_h;
-  const HGCHEDigiCollection& fh_digis = *fh_digis_h;
-
-  cellN_ = ee_digis.size() + fh_digis.size(); 
-  setTreeCellSize(cellN_);
-  size_t ic = 0;
-  for(const auto& eedata : ee_digis)
-  {
-    const HGCalDetId id = eedata.id();
-    const GlobalPoint& center = es_info_.geom_ee->getPosition(id); 
-    cellId_            .get()[ic] = id.rawId();
-    cellSubdet_        .get()[ic] = ForwardSubdetector::HGCEE;
-    cellSide_          .get()[ic] = id.zside();
-    cellLayer_         .get()[ic] = id.layer();
-    cellWafer_         .get()[ic] = id.wafer();
-    cellWaferType_     .get()[ic] = id.waferType();
-    cellCell_          .get()[ic] = id.cell();
-    cellModuleId_      .get()[ic] = 0;//modulePtr->moduleId();
-    cellTriggerCellId_ .get()[ic] = 0;//triggerCellPtr->triggerCellId();
-    cellDigi_          .get()[ic] = eedata[2].raw(); 
-    cellX_             .get()[ic] = center.x();
-    cellY_             .get()[ic] = center.y();
-    cellZ_             .get()[ic] = center.z();
-    cellEta_           .get()[ic] = center.eta();
-    ic++; 
-  } 
-
-  for(const auto& fhdata : fh_digis)
-  {
-    const HGCalDetId id = fhdata.id();
-    const GlobalPoint& center = es_info_.geom_fh->getPosition(id); 
-    cellId_            .get()[ic] = id.rawId();
-    cellSubdet_        .get()[ic] = ForwardSubdetector::HGCHEF;
-    cellSide_          .get()[ic] = id.zside();
-    cellLayer_         .get()[ic] = id.layer();
-    cellWafer_         .get()[ic] = id.wafer();
-    cellWaferType_     .get()[ic] = id.waferType();
-    cellCell_          .get()[ic] = id.cell();
-    cellModuleId_      .get()[ic] = 0;//modulePtr->moduleId();
-    cellTriggerCellId_ .get()[ic] = 0;//triggerCellPtr->triggerCellId();
-    cellDigi_          .get()[ic] = fhdata[2].raw(); 
-    cellX_             .get()[ic] = center.x();
-    cellY_             .get()[ic] = center.y();
-    cellZ_             .get()[ic] = center.z();
-    cellEta_           .get()[ic] = center.eta();
-    ic++;
-  } 
-
-   edm::ESHandle<HGCalDDDConstants> hgcaldddconstants;
-   
-   //iSetup.get<IdealGeometryRecord>().get("HGCalHESiliconSensitive", hgcaldddconstants);
-   //iSetup.get<IdealGeometryRecord>().get("HGCalHEScintillatorSensitive", hgcaldddconstants);
-   bool reco_ = true;
-   const HGCalDDDConstants hgdc(*hgcaldddconstants);
-   std::cout << " Layers = "    << hgdc.layers(reco_) 
-	     << " Sectors = "   << hgdc.sectors()     << " Minimum Slope = "
-	     << hgdc.minSlope() << std::endl;
-
-
-   edm::ESHandle<HGCalGeometry> hefGeom;
-   iSetup.get<IdealGeometryRecord>().get("HGCalHEScintillatorSensitive",hefGeom);
-   //iSetup.get<IdealGeometryRecord>().get("HGCalHEScintillatorSensitive", hefGeom);
-   //iSetup.get<IdealGeometryRecord>().get("HGCalEESensitive", hefGeom);
-   const HGCalTopology &topo=hefGeom->topology();
-   const HGCalDDDConstants &dddConst=topo.dddConstants(); 
-   bool reco_ = true;
-
-   std::cout << "dddConst.layers = " << dddConst.layers(reco_) 
-             << " Sectors = "        << dddConst.sectors()     
-             << " Minimum Slope = "  << dddConst.minSlope()
-             << std::endl;
-
-   for (edm::SortedCollection<HGCUncalibratedRecHit>::const_iterator uncHit = srcUncalibratedRecHitEE->begin(); uncHit != srcUncalibratedRecHitEE->end(); uncHit++)
+   //Lindsey's method   
+   for(std::vector<SimCluster>::const_iterator cl = simCluster->begin(); cl!=simCluster->end(); cl++ ) // Iterating over sim clusters
    {
-     DetId detid = uncHit->id(); 
-     uint32_t subDetId = detid.subdetId();
+     //TPrincipal *principal_ =  new TPrincipal(3,"D");
+     for (int ih=0;ih<cl->numberOfRecHits();++ih)
+     {
+       uint32_t id = cl->hits_and_fractions().at(ih).first;
+       unsigned int i_pfRecHit=0;
+       while (i_pfRecHit<pfRecHit->size() && pfRecHit->at(i_pfRecHit).detId()!=id) ++i_pfRecHit;
+       if (i_pfRecHit!=pfRecHit->size()) // this means we have matched a PFRecHit to the sim
+       {
+         const GlobalPoint& center = geoHandle->getPosition(id);
+         if(pfRecHit->at(i_pfRecHit).time() > 0)
+         {
+           double variables[3] = {0.,0.,0.};
+           variables[0] = center.x();
+           variables[1] = center.y();
+           variables[2] = center.z();
+           for (unsigned int i=0; i<pfRecHit->size(); i++) principal_->AddRow(variables); 
+         }
+       }
+     }
+     principal_->MakePrincipals();
+     TMatrixD matrix = *principal_->GetEigenVectors();
+     TVectorD eigenvalues = *principal_->GetEigenValues();
+     TVectorD sigmas = *principal_->GetSigmas();
+     GlobalPoint pcaShowerPos((*principal_->GetMeanValues())[0], (*principal_->GetMeanValues())[1], (*principal_->GetMeanValues())[2]);
+     float axis_sign( matrix(2,0)*(*principal_->GetMeanValues())[2] < 0 ? -1 : 1);
+     GlobalVector pcaShowerDir(axis_sign*matrix(0,0), axis_sign*matrix(1,0), axis_sign*matrix(2,0));
      
-   }*/
-
-   
-
+     for (int ih=0;ih<cl->numberOfRecHits();++ih)
+     {
+       uint32_t id = cl->hits_and_fractions().at(ih).first;
+       unsigned int i_pfRecHit=0;
+       while (i_pfRecHit<pfRecHit->size() && pfRecHit->at(i_pfRecHit).detId()!=id) ++i_pfRecHit;
+       if (i_pfRecHit!=pfRecHit->size()) // this means we have matched a PFRecHit to the sim
+       {
+         if(pfRecHit->at(i_pfRecHit).time() < 0) continue;
+         const GlobalPoint& center = geoHandle->getPosition(id);
+         const HGCalTopology &topo=geoHandle->topology();
+         const HGCalDDDConstants &dddConst=topo.dddConstants();
+         double cellSize =  dddConst.cellSizeHex(1);
+         std::cout << "cellSize = " << cellSize << std::endl;
+         GlobalPoint cellPos(center.x(), center.y(), center.z());
+         float lambda = (cellPos.z()-pcaShowerPos.z())/pcaShowerDir.z();
+         GlobalPoint interceptPos = pcaShowerPos + lambda*pcaShowerDir;
+         float absdx=std::fabs(cellPos.x()-interceptPos.x());
+         float absdy=std::fabs(cellPos.y()-interceptPos.y());
+         std::cout << "absdx = " << absdx << std::endl;
+         double isIn3x3_ = (absdx<cellSize*3./2. && absdy<cellSize*3./2.);
+         double isIn5x5_ = (absdx<cellSize*5./2. && absdy<cellSize*5./2.);
+         double isIn7x7_ = (absdx<cellSize*7./2. && absdy<cellSize*7./2.);
+         //std::cout << "isIn3x3_ = " << isIn3x3_ << std::endl;
+         v_isIn3x3.push_back(isIn3x3_);
+         v_isIn5x5.push_back(isIn5x5_);
+         v_isIn7x7.push_back(isIn7x7_);
+       }
+     }
+   }
    tree_->Fill();
 }
 
@@ -212,39 +172,9 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 void 
 HGCTimingAnalyzer::beginJob()
 {
+  //principal_ =  new TPrincipal(3,"D");
   edm::Service<TFileService> fs;
   tree_=fs->make<TTree>("HGCTiming","HGCTiming");
-/*  cellId_             .reset(new int[1],   array_deleter<int>());
-  cellSubdet_         .reset(new int[1],   array_deleter<int>());
-  cellSide_           .reset(new int[1],   array_deleter<int>());
-  cellLayer_          .reset(new int[1],   array_deleter<int>());
-  cellWafer_          .reset(new int[1],   array_deleter<int>());
-  cellWaferType_      .reset(new int[1],   array_deleter<int>());
-  cellCell_           .reset(new int[1],   array_deleter<int>());
-  cellModuleId_       .reset(new int[1],   array_deleter<int>());
-  cellTriggerCellId_  .reset(new int[1],   array_deleter<int>());
-  cellDigi_           .reset(new uint32_t[1],   array_deleter<uint32_t>());
-  cellX_              .reset(new float[1], array_deleter<float>());
-  cellY_              .reset(new float[1], array_deleter<float>());
-  cellZ_              .reset(new float[1], array_deleter<float>());
-  cellEta_            .reset(new float[1], array_deleter<float>());
-  
-  tree_->Branch("cell_n" , &cellN_ , "cell_n/I");
-  tree_->Branch("cell_id"                   , cellId_                   .get() , "cell_id[cell_n]/I");
-  tree_->Branch("cell_subdet"               , cellSubdet_               .get() , "cell_subdet[cell_n]/I");
-  tree_->Branch("cell_zside"                , cellSide_                 .get() , "cell_zside[cell_n]/I");
-  tree_->Branch("cell_layer"                , cellLayer_                .get() , "cell_layer[cell_n]/I");
-  tree_->Branch("cell_wafer"                , cellWafer_                .get() , "cell_wafer[cell_n]/I");
-  tree_->Branch("cell_wafertype"            , cellWaferType_            .get() , "cell_wafertype[cell_n]/I");
-  tree_->Branch("cell_cell"                 , cellCell_                 .get() , "cell_cell[cell_n]/I");
-  tree_->Branch("cell_moduleid"             , cellModuleId_             .get() , "cell_moduleid[cell_n]/I");
-  tree_->Branch("cell_triggercellid"        , cellTriggerCellId_        .get() , "cell_triggercellid[cell_n]/I");
-  tree_->Branch("cell_digi"                 , cellDigi_                 .get() , "cell_digi[cell_n]/i");
-  tree_->Branch("cell_x"                    , cellX_                    .get() , "cell_x[cell_n]/F");
-  tree_->Branch("cell_y"                    , cellY_                    .get() , "cell_y[cell_n]/F");
-  tree_->Branch("cell_z"                    , cellZ_                    .get() , "cell_z[cell_n]/F");
-  tree_->Branch("cell_eta"                  , cellEta_                  .get() , "cell_eta[cell_n]/F");
-*/  
   branch_=tree_->Branch("run",   &run_,   "run/I");
   branch_=tree_->Branch("event", &event_, "event/I");
   branch_=tree_->Branch("lumi",  &lumi_,  "lumi/I");
@@ -256,12 +186,17 @@ HGCTimingAnalyzer::beginJob()
   branch_=tree_->Branch("recHit_y", &recHit_y);
   branch_=tree_->Branch("recHit_z", &recHit_z);
   branch_=tree_->Branch("recHit_time", &recHit_time);
+  branch_=tree_->Branch("recHit_layer", &recHit_layer);
+  branch_=tree_->Branch("v_isIn3x3", &v_isIn3x3);
+  branch_=tree_->Branch("v_isIn5x5", &v_isIn5x5);
+  branch_=tree_->Branch("v_isIn7x7", &v_isIn7x7);
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
 HGCTimingAnalyzer::endJob() 
 {
+  delete principal_;
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
@@ -272,42 +207,6 @@ HGCTimingAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions
   edm::ParameterSetDescription desc;
   desc.setUnknown();
   descriptions.addDefault(desc);
-}
-
-/*****************************************************************/
-void HGCTimingAnalyzer::setTreeCellSize(const size_t n) 
-/*****************************************************************/
-{
- /* cellId_             .reset(new int[n],   array_deleter<int>());
-  cellSubdet_         .reset(new int[n],   array_deleter<int>());
-  cellSide_           .reset(new int[n],   array_deleter<int>());
-  cellLayer_          .reset(new int[n],   array_deleter<int>());
-  cellWafer_          .reset(new int[n],   array_deleter<int>());
-  cellWaferType_      .reset(new int[n],   array_deleter<int>());
-  cellCell_           .reset(new int[n],   array_deleter<int>());
-  cellModuleId_       .reset(new int[n],   array_deleter<int>());
-  cellTriggerCellId_  .reset(new int[n],   array_deleter<int>());
-  cellDigi_           .reset(new uint32_t[n],   array_deleter<uint32_t>());
-  cellX_              .reset(new float[n], array_deleter<float>());
-  cellY_              .reset(new float[n], array_deleter<float>());
-  cellZ_              .reset(new float[n], array_deleter<float>());
-  cellEta_            .reset(new float[n], array_deleter<float>());
-  
-  tree_->GetBranch("cell_id")           ->SetAddress(cellId_             .get());
-  tree_->GetBranch("cell_subdet")       ->SetAddress(cellSubdet_         .get());
-  tree_->GetBranch("cell_zside")        ->SetAddress(cellSide_           .get());
-  tree_->GetBranch("cell_layer")        ->SetAddress(cellLayer_          .get());
-  tree_->GetBranch("cell_wafer")        ->SetAddress(cellWafer_          .get());
-  tree_->GetBranch("cell_wafertype")    ->SetAddress(cellWaferType_      .get());
-  tree_->GetBranch("cell_cell")         ->SetAddress(cellCell_           .get());
-  tree_->GetBranch("cell_moduleid")     ->SetAddress(cellModuleId_       .get());
-  tree_->GetBranch("cell_triggercellid")->SetAddress(cellTriggerCellId_  .get());
-  tree_->GetBranch("cell_digi")         ->SetAddress(cellDigi_           .get());
-  tree_->GetBranch("cell_x")            ->SetAddress(cellX_              .get());
-  tree_->GetBranch("cell_y")            ->SetAddress(cellY_              .get());
-  tree_->GetBranch("cell_z")            ->SetAddress(cellZ_              .get());
-  tree_->GetBranch("cell_eta")          ->SetAddress(cellEta_            .get());
- */ 
 }
 
 //define this as a plug-in

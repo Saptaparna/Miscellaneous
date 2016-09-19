@@ -84,6 +84,9 @@
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerFECodecBase.h"
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerBackendProcessor.h"
 #include "RecoParticleFlow/PFClusterProducer/interface/PFHGCalRecHitCreator.h"
+#include "TPrincipal.h"
+#include "TMatrixD.h"
+#include "TVectorD.h"
 //
 // class declaration
 //
@@ -115,7 +118,6 @@ class HGCTimingAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       virtual void beginJob() override;
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
-      void setTreeCellSize(const size_t);
       // ----------member data ---------------------------
       Int_t run_,event_,lumi_,vertex_nTracks;
       Float_t vertex_x, vertex_y, vertex_z, vertex_pt, vertex_nChi2;
@@ -124,8 +126,10 @@ class HGCTimingAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       std::vector<float> recHit_z;
       std::vector<float> recHit_energy; 
       std::vector<float> recHit_time;
-      std::vector<uint32_t> recHit_recoDetId; 
-      std::vector<float> uncRecHit_time;
+      std::vector<float> recHit_layer;
+      std::vector<float> v_isIn3x3;
+      std::vector<float> v_isIn5x5;
+      std::vector<float> v_isIn7x7;
       TLorentzVector *genVertex_;
       TBranch *branch_;      
       TTree *tree_; 
@@ -138,21 +142,7 @@ class HGCTimingAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       std::unique_ptr<HGCalTriggerGeometryBase> triggerGeometry_;
       edm::EDGetTokenT<std::vector<SimCluster> > srcSimCluster_; 
       edm::EDGetToken srcDigiee_, srcDigifh_, srcDigibh_;
-      int cellN_;
-      std::shared_ptr<int> cellId_;
-      std::shared_ptr<int> cellSubdet_;
-      std::shared_ptr<int> cellSide_;
-      std::shared_ptr<int> cellLayer_;
-      std::shared_ptr<int> cellWafer_;
-      std::shared_ptr<int> cellWaferType_;
-      std::shared_ptr<int> cellCell_;
-      std::shared_ptr<int> cellModuleId_;
-      std::shared_ptr<int> cellTriggerCellId_;
-      std::shared_ptr<uint32_t> cellDigi_;
-      std::shared_ptr<float>    cellX_;
-      std::shared_ptr<float>    cellY_;
-      std::shared_ptr<float>    cellZ_; 
-      std::shared_ptr<float>    cellEta_;
+      TPrincipal *principal_;
       };
       //
       // //
