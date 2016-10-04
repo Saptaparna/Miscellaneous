@@ -59,6 +59,7 @@
 #include "Geometry/Records/interface/IdealGeometryRecord.h"
 #include "SimDataFormats/TrackingHit/interface/PSimHit.h"
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
+#include "DataFormats/HGCRecHit/interface/HGCRecHit.h"
 #include "DataFormats/HGCRecHit/interface/HGCRecHitCollections.h"
 #include "DataFormats/HGCDigi/interface/HGCDigiCollections.h"
 #include "DataFormats/ForwardDetId/interface/HGCEEDetId.h"
@@ -69,10 +70,9 @@
 #include "Geometry/HGCalGeometry/interface/HGCalGeometry.h"
 #include "Geometry/HGCalCommonData/interface/HGCalParameters.h"
 #include "Geometry/HGCalCommonData/interface/HGCalDDDConstants.h"
-
 #include "FWCore/Framework/interface/ESTransientHandle.h"
 #include "FWCore/Framework/interface/ESHandle.h"
-
+#include "SimDataFormats/CaloAnalysis/interface/SimCluster.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TBranch.h"
@@ -80,11 +80,17 @@
 #include "TLorentzVector.h"
 #include <iterator>
 #include <iostream>
-
+#include <algorithm>
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerGeometryBase.h"
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerFECodecBase.h"
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerBackendProcessor.h"
-
+#include "DataFormats/ParticleFlowReco/interface/PFRecHitFraction.h"
+#include "DataFormats/ParticleFlowReco/interface/PFRecHit.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlock.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockFwd.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockElement.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockElementCluster.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockElementTrack.h"
 //
 // class declaration
 //
@@ -125,39 +131,29 @@ class HGCTimingAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       std::vector<float> recHit_z;
       std::vector<float> recHit_energy; 
       std::vector<float> recHit_time;
-      std::vector<uint32_t> recHit_recoDetId; 
-      std::vector<float> uncRecHit_time;
-      float dist2center_, tof_;
+      std::vector<float> genParticle_eta;
+      std::vector<float> genParticle_phi;
+      std::vector<float> cluster_x;
+      std::vector<float> cluster_y;
+      std::vector<float> cluster_z;
+      std::vector<float> cluster_energy;
+      std::vector<float> cluster_time;
+      std::vector<float> cluster_layer;
       TLorentzVector *genVertex_;
       TBranch *branch_;      
       TTree *tree_; 
       edm::EDGetTokenT<std::vector<reco::GenParticle> > srcGenParticles_;      
       edm::EDGetTokenT<std::vector<SimTrack> > srcSimTracks_;
       edm::EDGetTokenT<std::vector<SimVertex> > srcSimVertices_; 
-      edm::EDGetTokenT<edm::HepMCProduct> srcHepmcevent_;
       edm::EDGetTokenT<std::vector<reco::PFRecHit> > srcPFRecHit_;
       edm::EDGetTokenT<std::vector<PCaloHit> > srcCaloHit_;
-      edm::EDGetTokenT<edm::SortedCollection<HGCUncalibratedRecHit> > srcUncalibratedRecHitEE_; 
-      edm::EDGetTokenT<edm::SortedCollection<HGCUncalibratedRecHit> > srcUncalibratedRecHitHEB_;
-      edm::EDGetTokenT<edm::SortedCollection<HGCUncalibratedRecHit> > srcUncalibratedRecHitHEF_;
-      edm::EDGetToken srcDigiee_, srcDigifh_, srcDigibh_;
       HGCalTriggerGeometryBase::es_info es_info_;
       std::unique_ptr<HGCalTriggerGeometryBase> triggerGeometry_;
-      int cellN_;
-      std::shared_ptr<int> cellId_;
-      std::shared_ptr<int> cellSubdet_;
-      std::shared_ptr<int> cellSide_;
-      std::shared_ptr<int> cellLayer_;
-      std::shared_ptr<int> cellWafer_;
-      std::shared_ptr<int> cellWaferType_;
-      std::shared_ptr<int> cellCell_;
-      std::shared_ptr<int> cellModuleId_;
-      std::shared_ptr<int> cellTriggerCellId_;
-      std::shared_ptr<uint32_t> cellDigi_;
-      std::shared_ptr<float>    cellX_;
-      std::shared_ptr<float>    cellY_;
-      std::shared_ptr<float>    cellZ_; 
-      std::shared_ptr<float>    cellEta_;
+      edm::EDGetTokenT<std::vector<reco::PFCluster> > srcPFCluster_; 
+      edm::EDGetToken srcDigiee_, srcDigifh_, srcDigibh_;
+      edm::EDGetTokenT<edm::SortedCollection<HGCRecHit> > srcRecHitEE_;
+      edm::EDGetTokenT<edm::SortedCollection<HGCRecHit> > srcRecHitHEB_;
+      edm::EDGetTokenT<edm::SortedCollection<HGCRecHit> > srcRecHitHEF_;
       };
       //
       // //
