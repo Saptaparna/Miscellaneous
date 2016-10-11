@@ -91,6 +91,7 @@
 #include "DataFormats/ParticleFlowReco/interface/PFBlockElement.h"
 #include "DataFormats/ParticleFlowReco/interface/PFBlockElementCluster.h"
 #include "DataFormats/ParticleFlowReco/interface/PFBlockElementTrack.h"
+#include "SimDataFormats/CaloAnalysis/interface/CaloParticle.h"
 //
 // class declaration
 //
@@ -139,6 +140,11 @@ class HGCTimingAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       std::vector<float> cluster_energy;
       std::vector<float> cluster_time;
       std::vector<float> cluster_layer;
+      std::vector<float> simCluster_eta;
+      std::vector<float> simCluster_phi;
+      std::vector<float> simCluster_energy;
+      std::vector<float> simCluster_pt;
+      std::vector<float> simCluster_simEnergy;
       TLorentzVector *genVertex_;
       TBranch *branch_;      
       TTree *tree_; 
@@ -150,6 +156,7 @@ class HGCTimingAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       HGCalTriggerGeometryBase::es_info es_info_;
       std::unique_ptr<HGCalTriggerGeometryBase> triggerGeometry_;
       edm::EDGetTokenT<std::vector<reco::PFCluster> > srcPFCluster_; 
+      edm::EDGetTokenT<std::vector<CaloParticle> > srcCaloParticle_;
       edm::EDGetToken srcDigiee_, srcDigifh_, srcDigibh_;
       edm::EDGetTokenT<edm::SortedCollection<HGCRecHit> > srcRecHitEE_;
       edm::EDGetTokenT<edm::SortedCollection<HGCRecHit> > srcRecHitHEB_;
