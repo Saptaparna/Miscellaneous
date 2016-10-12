@@ -3,7 +3,7 @@
 
 bool sameVal(double a, double b)
 {
-  return fabs(a - b) < 1.000e-02;
+  return fabs(a - b) < 1.000e-03;
 }
 
 HGCTimingAnalyzer::HGCTimingAnalyzer(const edm::ParameterSet& iConfig)
@@ -48,6 +48,7 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    cluster_x.clear();
    cluster_y.clear();
    cluster_z.clear();
+   cluster_eta.clear();
    cluster_energy.clear();
    cluster_time.clear();
    recHit_energy.clear();
@@ -111,47 +112,55 @@ HGCTimingAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    for(unsigned int l=0; l<pfCluster->size(); l++) // Iterating over sim clusters
    {
      if(pfCluster->at(l).time() > std::numeric_limits<double>::min())
-     { 
-       cluster_x.push_back(pfCluster->at(l).position().X());
-       cluster_y.push_back(pfCluster->at(l).position().Y());
-       cluster_z.push_back(pfCluster->at(l).position().Z());
-       cluster_energy.push_back(pfCluster->at(l).energy());
-       cluster_time.push_back(pfCluster->at(l).time());
-       cluster_layer.push_back(pfCluster->at(l).layer());
-       for(unsigned ifrac = 0; ifrac < pfCluster->at(l).hitsAndFractions().size(); ifrac++)
+     {
+       for (std::vector<CaloParticle>::const_iterator it_caloPart = caloParticle->begin(); it_caloPart != caloParticle->end(); ++it_caloPart)
        {
-         uint32_t id = pfCluster->at(l).hitsAndFractions().at(ifrac).first;
-         edm::SortedCollection<HGCRecHit>::const_iterator hgcHitEE = srcRecHitEE->find(id);
-         if(hgcHitEE != srcRecHitEE->end())
+         const SimClusterRefVector simClusterRefVector = it_caloPart->simClusters(); 
+         if(not sameVal(pfCluster->at(l).eta(), it_caloPart->eta())) continue; 
+         
+         cluster_x.push_back(pfCluster->at(l).position().X());
+         cluster_y.push_back(pfCluster->at(l).position().Y());
+         cluster_z.push_back(pfCluster->at(l).position().Z());
+         cluster_energy.push_back(pfCluster->at(l).energy());
+         cluster_time.push_back(pfCluster->at(l).time());
+         cluster_layer.push_back(pfCluster->at(l).layer());
+         cluster_eta.push_back(pfCluster->at(l).eta());   
+ 
+         for(unsigned ifrac = 0; ifrac < pfCluster->at(l).hitsAndFractions().size(); ifrac++)
          {
-           DetId detId_recHit_ee = hgcHitEE->detid();
-           if(id==detId_recHit_ee.rawId() and hgcHitEE->time() > 0)
+           uint32_t id = pfCluster->at(l).hitsAndFractions().at(ifrac).first;
+           edm::SortedCollection<HGCRecHit>::const_iterator hgcHitEE = srcRecHitEE->find(id);
+           if(hgcHitEE != srcRecHitEE->end())
            {
-             const GlobalPoint& recHitPos_ee = geoHandle_ee->getPosition(id); 
-             recHit_x.push_back(recHitPos_ee.x());
-             recHit_y.push_back(recHitPos_ee.y());
-             recHit_z.push_back(recHitPos_ee.z());
-             recHit_energy.push_back(hgcHitEE->energy());
-             recHit_time.push_back(hgcHitEE->time());
+             DetId detId_recHit_ee = hgcHitEE->detid();
+             if(id==detId_recHit_ee.rawId() and hgcHitEE->time() > 0)
+             {
+               const GlobalPoint& recHitPos_ee = geoHandle_ee->getPosition(id); 
+               recHit_x.push_back(recHitPos_ee.x());
+               recHit_y.push_back(recHitPos_ee.y());
+               recHit_z.push_back(recHitPos_ee.z());
+               recHit_energy.push_back(hgcHitEE->energy());
+               recHit_time.push_back(hgcHitEE->time());
+             }
            }
          }
-       }
-       //HEF
-       for(unsigned ifrac = 0; ifrac < pfCluster->at(l).hitsAndFractions().size(); ifrac++)
-       {
-         uint32_t id = pfCluster->at(l).hitsAndFractions().at(ifrac).first;
-         edm::SortedCollection<HGCRecHit>::const_iterator hgcHitHEF = srcRecHitHEF->find(id);
-         if(hgcHitHEF != srcRecHitHEF->end())
+         //HEF
+         for(unsigned ifrac = 0; ifrac < pfCluster->at(l).hitsAndFractions().size(); ifrac++)
          {
-           DetId detId_recHit_hef = hgcHitHEF->detid();
-           if(id==detId_recHit_hef.rawId() and hgcHitHEF->time() > 0)
+           uint32_t id = pfCluster->at(l).hitsAndFractions().at(ifrac).first;
+           edm::SortedCollection<HGCRecHit>::const_iterator hgcHitHEF = srcRecHitHEF->find(id);
+           if(hgcHitHEF != srcRecHitHEF->end())
            {
-             const GlobalPoint& recHitPos_hef = geoHandle_hef->getPosition(id);
-             recHit_x.push_back(recHitPos_hef.x());
-             recHit_y.push_back(recHitPos_hef.y());
-             recHit_z.push_back(recHitPos_hef.z());
-             recHit_energy.push_back(hgcHitHEF->energy());
-             recHit_time.push_back(hgcHitHEF->time());
+             DetId detId_recHit_hef = hgcHitHEF->detid();
+             if(id==detId_recHit_hef.rawId() and hgcHitHEF->time() > 0)
+             {
+               const GlobalPoint& recHitPos_hef = geoHandle_hef->getPosition(id);
+               recHit_x.push_back(recHitPos_hef.x());
+               recHit_y.push_back(recHitPos_hef.y());
+               recHit_z.push_back(recHitPos_hef.z());
+               recHit_energy.push_back(hgcHitHEF->energy());
+               recHit_time.push_back(hgcHitHEF->time());
+             }
            }
          }
        }
@@ -198,6 +207,7 @@ void HGCTimingAnalyzer::beginJob()
   branch_=tree_->Branch("cluster_time", &cluster_time);
   branch_=tree_->Branch("recHit_time", &recHit_time);
   branch_=tree_->Branch("cluster_layer", &cluster_layer);
+  branch_=tree_->Branch("cluster_eta", &cluster_eta);
   branch_=tree_->Branch("genParticle_eta", &genParticle_eta);
   branch_=tree_->Branch("genParticle_phi", &genParticle_phi);
   branch_=tree_->Branch("simCluster_eta", &simCluster_eta);

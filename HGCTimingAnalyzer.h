@@ -140,6 +140,7 @@ class HGCTimingAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       std::vector<float> cluster_energy;
       std::vector<float> cluster_time;
       std::vector<float> cluster_layer;
+      std::vector<float> cluster_eta;
       std::vector<float> simCluster_eta;
       std::vector<float> simCluster_phi;
       std::vector<float> simCluster_energy;
